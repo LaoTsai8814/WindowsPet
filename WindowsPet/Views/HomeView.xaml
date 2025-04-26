@@ -1,0 +1,47 @@
+﻿<UserControl x:Class="WindowsPet.Views.HomeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:WindowsPet.Views"
+             xmlns:uc ="clr-namespace:WindowsPet.Views.Ucontrol"
+             mc:Ignorable="d" 
+             >
+    <Border CornerRadius="25" Background="#151f2d" BorderThickness="1">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid Grid.Column="0" Grid.ColumnSpan="2">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <uc:SideButton Icon="WindowMinimize" ></uc:SideButton>
+                    <uc:SideButton Icon="WindowClose" ></uc:SideButton>
+                </StackPanel>
+            </Grid>
+            <Grid Grid.Column="0" Grid.Row="1" Grid.RowSpan="2">
+                <StackPanel>
+                    <StackPanel HorizontalAlignment="Right">
+                    </StackPanel>
+                    <StackPanel>
+                        <uc:SideButton Icon="Home" Command="{Binding SideButtonCommand[Home]}"></uc:SideButton>
+                        <uc:SideButton Icon="MonitorDashboard" Command="{Binding SideButtonCommand[MonitorDashboard]}"></uc:SideButton>
+                        <uc:SideButton Icon="Shopping" Command="{Binding SideButtonCommand[Shopping]}"/>
+                        <uc:SideButton Icon="Chat" Command="{Binding SideButtonCommand[Chat]}"/>
+                        <uc:SideButton Icon="Medal" Command="{Binding SideButtonCommand[Medal]}"/>
+                        <uc:SideButton Icon="Account" Command="{Binding SideButtonCommand[Account]}"/>
+                        <uc:SideButton Icon="SettingsHelper" Command="{Binding SideButtonCommand[SettingsHelper]}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+            <Grid Grid.Row="1" Grid.Column="1">
+                <UserControl Content="{Binding CurrentTab}"/>
+            </Grid>
+
+        </Grid>
+    </Border>
+</UserControl>

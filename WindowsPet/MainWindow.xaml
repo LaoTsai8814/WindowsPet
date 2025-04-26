@@ -1,0 +1,15 @@
+﻿<Window x:Class="WindowsPet.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WindowsPet"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="760" Width="1280" ResizeMode="NoResize" AllowsTransparency="True" WindowStyle="None" Background="Transparent" WindowStartupLocation="CenterScreen">
+
+    <Border CornerRadius="25">
+        <Grid>
+            <UserControl Content="{Binding CurrentView}"></UserControl>
+        </Grid>
+    </Border>
+</Window>

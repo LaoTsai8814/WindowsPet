@@ -1,0 +1,43 @@
+﻿<UserControl x:Class="WindowsPet.Views.Tabs.HomeTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:WindowsPet.Views.Tabs"
+                xmlns:uc="clr-namespace:WindowsPet.Views.Ucontrol"
+             >
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="4*"/>
+                <ColumnDefinition Width="5*"/>
+                <ColumnDefinition Width="3*"/>
+            </Grid.ColumnDefinitions>
+            <Grid Grid.Column="0">
+                <Border Style="{StaticResource DashBoardCard}">
+                    <!--Bad Name But It Represent Current Online Pet-->
+                    <uc:DashBoardCardUserPet DashBoardName="在線寵物" OnlinePets="{Binding OnlinePets, Mode=TwoWay}"/>
+                </Border>
+            </Grid>
+            <Grid Grid.Column="1">
+                <Border Style="{StaticResource DashBoardCard}">
+                    <uc:DashBoardCardUserPet DashBoardName="熱門寵物" OnlinePets="{Binding PopularPets, Mode=TwoWay}"/>
+                </Border>
+            </Grid>
+            <Grid Grid.Column="2">
+                <Border Style="{StaticResource DashBoardCard}">
+                
+                </Border>
+            </Grid>
+        </Grid>
+        <Grid Grid.Row="1">
+            <Border Style="{StaticResource DashBoardCard}">
+                <uc:DashBoardCardUserPet DashBoardName="我的寵物" OnPetClick="{Binding OnPetClick}" OnlinePets="{Binding MyFavoritePets, Mode=TwoWay}"/>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

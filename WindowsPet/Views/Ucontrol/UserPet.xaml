@@ -1,0 +1,29 @@
+﻿<UserControl x:Class="WindowsPet.Views.Ucontrol.UserPet"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:WindowsPet.Views.Ucontrol"
+             xmlns:vm="clr-namespace:WindowsPet.VM.TabsVM"
+             >
+    <Button Style="{StaticResource Radiusbutton}"  Command="{Binding OnPetClick, RelativeSource={RelativeSource AncestorType=local:DashBoardCardUserPet}}"
+        CommandParameter="{Binding PetImage, RelativeSource={RelativeSource AncestorType=local:UserPet}}" >
+        
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0" >
+                <Image Width="100" Height="100" Margin="5"
+                Source="{Binding PetImage, RelativeSource={RelativeSource AncestorType=local:UserPet}}" />
+            </Grid>
+            <Grid Grid.Row="1">
+                <TextBlock Text="{Binding PetName,RelativeSource={RelativeSource AncestorType=local:UserPet}}" Style="{StaticResource TextblockStyle}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,5,0,5">
+
+                </TextBlock>
+            </Grid>
+        </Grid>
+    </Button>
+    
+</UserControl>
