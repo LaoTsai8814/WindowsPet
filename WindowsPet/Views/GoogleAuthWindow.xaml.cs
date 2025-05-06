@@ -11,6 +11,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using WindowsPet.VM;
 using WindowsPet.Models;
+using Microsoft.Web.WebView2.Core;
 
 namespace WindowsPet.Views
 {
@@ -29,66 +30,88 @@ namespace WindowsPet.Views
         {
             InitializeComponent();
 
-            string oauthUrl = $"https://accounts.google.com/o/oauth2/v2/auth?" +
-                         $"client_id={clientId}&" +
-                         $"redirect_uri=http://localhost&" +
-                         $"response_type=code&" +
-                         $"scope=openid%20email%20profile&" +
-                         $"access_type=offline";
-
-            OAuthBrowser.Navigated += OAuthBrowser_Navigated;
-            OAuthBrowser.Navigate(oauthUrl);
+            InitializeComponent();
+            Loaded += GoogleAuthWindow_Loaded;
 
         }
-        private async void OAuthBrowser_Navigated(object sender, NavigationEventArgs e)
+        private async void GoogleAuthWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            if (e.Uri.AbsoluteUri.StartsWith("http://localhost") && e.Uri.Query.Contains("code="))
+            try
             {
-                var query = HttpUtility.ParseQueryString(e.Uri.Query);
-                var code = query["code"];
-                if (code != null)
-                {
-                    // 取得 access_token
-                    using var http = new HttpClient();
-                    var content = new FormUrlEncodedContent(new Dictionary<string, string>
-                {
-                    { "code", code },
-                    { "client_id", clientId },
-                    { "client_secret", clientSecret },
-                    { "redirect_uri", "http://localhost" },
-                    { "grant_type", "authorization_code" }
-                });
+                await OAuthBrowser.EnsureCoreWebView2Async();
 
-                    var response = await http.PostAsync("https://oauth2.googleapis.com/token", content);
-                    var json = await response.Content.ReadAsStringAsync();
-                    var tokenData = JsonSerializer.Deserialize<JsonElement>(json);
+                OAuthBrowser.CoreWebView2.NavigationCompleted += OAuthBrowser_NavigationCompleted;
 
-                    if (tokenData.TryGetProperty("id_token", out var idTokenElement))
+                string oauthUrl = $"https://accounts.google.com/o/oauth2/v2/auth?" +
+                                  $"client_id={clientId}&" +
+                                  $"redirect_uri=http://localhost&" +
+                                  $"response_type=code&" +
+                                  $"scope=openid%20email%20profile&" +
+                                  $"access_type=offline";
+
+                OAuthBrowser.CoreWebView2.Navigate(oauthUrl);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"初始化 OAuth 瀏覽器時發生錯誤：{ex.Message}");
+            }
+        }
+        private async void OAuthBrowser_NavigationCompleted(object? sender, CoreWebView2NavigationCompletedEventArgs e)
+        {
+            try
+            {
+                var uri = new Uri(OAuthBrowser.Source.ToString());
+
+                if (uri.Host == "localhost" && uri.Query.Contains("code="))
+                {
+                    var query = HttpUtility.ParseQueryString(uri.Query);
+                    var code = query["code"];
+                    if (!string.IsNullOrEmpty(code))
                     {
-                        var idToken = idTokenElement.GetString();
-                        var handler = new JwtSecurityTokenHandler();
-                        var token = handler.ReadJwtToken(idToken);
-                        string? email = token?.Payload["email"]?.ToString();
-                        string? name = token?.Payload["name"]?.ToString();
-                        // Pack email and name into a class
-                        var userData = new GoogleUserData
+                        using var http = new HttpClient();
+                        var content = new FormUrlEncodedContent(new Dictionary<string, string>
+                    {
+                        { "code", code },
+                        { "client_id", clientId },
+                        { "client_secret", clientSecret },
+                        { "redirect_uri", "http://localhost" },
+                        { "grant_type", "authorization_code" }
+                    });
+
+                        var response = await http.PostAsync("https://oauth2.googleapis.com/token", content);
+                        var json = await response.Content.ReadAsStringAsync();
+
+                        var tokenData = JsonSerializer.Deserialize<JsonElement>(json);
+
+                        if (tokenData.TryGetProperty("id_token", out var idTokenElement))
                         {
-                            Name = name,
-                            Email = email,
-                            Token = idToken
-                        };
-                        //Give it to LoginManager
-                        GoogleLoginStatus?.Invoke(userData);
-                        //MessageBox.Show($"登入成功！\n\nID Token:\n{idToken}");
-                        //MessageBox.Show($"Email:{email}\n\n{name}");
-                        this.Close();
-                    }
-                    else
-                    {
-                        MessageBox.Show("登入失敗，無法取得 id_token");
-                    }
+                            var idToken = idTokenElement.GetString();
+                            var handler = new JwtSecurityTokenHandler();
+                            var token = handler.ReadJwtToken(idToken);
 
+                            string? email = token.Payload.TryGetValue("email", out var emailObj) ? emailObj?.ToString() : null;
+                            string? name = token.Payload.TryGetValue("name", out var nameObj) ? nameObj?.ToString() : null;
+
+                            var userData = new GoogleUserData
+                            {
+                                Name = name,
+                                Email = email,
+                                Token = idToken
+                            };
+
+                            GoogleLoginStatus?.Invoke(userData);
+                            this.Close();
+                        }
+                        else
+                        {
+                            MessageBox.Show("登入失敗，無法取得 id_token");
+                        }
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"OAuth 登入過程發生錯誤：\n{ex.Message}");
             }
         }
     }

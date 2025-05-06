@@ -4,11 +4,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WindowsPet.Views"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         mc:Ignorable="d"
         Title="Window1" Height="450" Width="800">
     <Grid>
         <Grid >
-            <WebBrowser Name="OAuthBrowser"/>
+            <wv2:WebView2 Name="OAuthBrowser"/>
         </Grid>
     </Grid>
 </Window>

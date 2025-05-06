@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,7 +16,7 @@ namespace WindowsPet.Models
         private static ViewModelManager? _viewManager;
         public static ViewModelManager Instance => _viewManager ??= new();
 
-        Dictionary<object, object> _viewModelDictionary = new();
+        ConcurrentDictionary<object, object> _viewModelDictionary = new();
 
         public T? GetViewModel<T>(object view) where T : class
         {

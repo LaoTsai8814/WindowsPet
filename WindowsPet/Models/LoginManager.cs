@@ -23,10 +23,9 @@ namespace WindowsPet.Models
         public static LoginManager Instance => _loginmanager ??= new();
 
         
-        public async void NormalLogin(LoginCommand login)
+        public async Task NormalLogin(LoginCommand login)
         {
             await JsonSerialize.SerializeAndSendJson<LoginCommand>(login);
-
         }
         public void GoogleLogin()
         {

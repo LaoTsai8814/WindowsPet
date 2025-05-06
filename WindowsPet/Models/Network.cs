@@ -37,6 +37,13 @@ namespace WindowsPet.Models
         public static volatile bool OnConnecting = false;
 
 
+
+
+
+        /// <summary>
+        /// Try Connect To Server and Start the Server Respond Handler
+        /// </summary>
+        /// <returns></returns>
         public async Task CreateAsync()
         {
             #region
@@ -65,11 +72,18 @@ namespace WindowsPet.Models
             });
             #endregion
             HandleFromServer.Instance.ServerRespondHandler();
-
             await Instance.ConnectToServer();
-
         }
 
+
+
+
+
+        /// <summary>
+        /// Try Connect To Server
+        /// Set Reader and Writer Stream
+        /// Open A Thread For Receive Server Respond Message
+        ///</summary>
         private async Task<bool> ConnectToServer()
         {
             try
@@ -111,11 +125,12 @@ namespace WindowsPet.Models
             return true;
 
         }
-        NetworkManager()
-        {
+        
 
-            // Constructor logic here
-        }
+
+
+
+
         public async Task SendAsync(string message)
         {
             try
@@ -130,8 +145,6 @@ namespace WindowsPet.Models
                 if (_writer != null)
                 {
                     await _writer.WriteLineAsync(message);
-
-
                 }
             }
             catch (Exception ex)
@@ -167,8 +180,17 @@ namespace WindowsPet.Models
             }
 
         }
+        
+        
+        NetworkManager() { }
 
     }
+
+
+
+    /// <summary>
+    /// Json Serialize and Deserialize Include Serialize And Send
+    /// </summary>
     internal class JsonSerialize
     {
         public static string SerializeJson(Type type)
@@ -189,6 +211,13 @@ namespace WindowsPet.Models
         }
 
     }
+
+
+
+
+    /// <summary>
+    ///  Get the Main Server IP and port
+    /// </summary>
     internal class NetworkSetup
     {
         static readonly IPAddress ipaddr = new IPAddress(new byte[] { 192, 168, 0, 104 });

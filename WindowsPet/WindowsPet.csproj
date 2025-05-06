@@ -28,7 +28,9 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3179.45" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="SSH.NET" Version="2025.0.0" />
     <PackageReference Include="System.Drawing.Primitives" Version="4.3.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.8.0" />
     <PackageReference Include="Unnoficial.Microsoft.Expression.Drawing" Version="1.0.0" />
@@ -36,7 +38,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Asset\dog.gif" />
     <Resource Include="PictureAsset\hehe.png" />
     <Resource Include="PictureAsset\home_test_-export.png" />
     <Resource Include="PictureAsset\moster_1.png" />
@@ -44,6 +45,10 @@
     <Resource Include="PictureAsset\moster_31.png" />
     <Resource Include="PictureAsset\moster_3w.png" />
     <Resource Include="PictureAsset\dog.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Asset\" />
   </ItemGroup>
 
 </Project>

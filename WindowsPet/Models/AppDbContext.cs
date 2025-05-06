@@ -17,9 +17,18 @@ namespace WindowsPet.Models
 
         public DbSet<PersonalData> Users { get; set; }
 
+        public DbSet<Pet> Pets { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         => options.UseSqlite("Data Source=account.db");
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<PersonalData>()
+                .HasMany(u => u.UserPets)
+                .WithMany(p => p.Owner)
+                .UsingEntity(j => j.ToTable("UserPets"));
+        }
         public void ConnectToDB()
         {
             // Create the database if it doesn't exist          
@@ -36,7 +45,7 @@ namespace WindowsPet.Models
             {
                 Console.WriteLine(ex);
             }
-            
+
         }
         public void SaveChangesToDB()
         {
@@ -57,7 +66,7 @@ namespace WindowsPet.Models
             try
             {
                 var user = Users.FirstOrDefault(u => u.Email == email);
-                if (user != null)
+                if (user != null && user.Token!=null)
                 {
                     return user.Token;
                 }
@@ -72,11 +81,49 @@ namespace WindowsPet.Models
                 return string.Empty;
             }
         }
+        public void AddPetListToUser(string token,List<Pet> pets)
+        {
+            // Add a pet list to the user
+            if (pets == null)
+            {
+                return;
+            }
+            try
+            {
+                var user = Users.FirstOrDefault(u=>u.Token == token);
+                if (user != null)
+                {
+                    foreach (var pet in pets)
+                    {
+                        var trackedPet = Pets.FirstOrDefault(p => p.Id == pet.Id);
+                        if (trackedPet != null)
+                        {
+                            user.UserPets?.Add(trackedPet);
+                        }
+                        else
+                        {
+                            // 如果是新寵物（未存在 DB），可以選擇先加入 Pets 資料表
+                            Pets.Add(pet);
+                            user.UserPets?.Add(pet);
+                        }
+                    }        
+                }
+                else
+                {
+                    
+                }
+                SaveChangesToDB();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
 
 
 
 
 
 
+        }
     }
 }

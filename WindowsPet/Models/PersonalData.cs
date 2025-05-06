@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace WindowsPet.Models
 {
-    internal class PersonalData
+    public class PersonalData
     {
 		
         public int Id { get; set; }
@@ -48,8 +48,9 @@ namespace WindowsPet.Models
 			get { return _token; }
 			set { _token = value; }
 		}
-        #endregion
+		#endregion
 
+		public List<Pet>? UserPets;
 
 
 

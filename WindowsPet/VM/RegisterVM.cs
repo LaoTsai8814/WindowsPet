@@ -16,7 +16,7 @@ namespace WindowsPet.VM
     {
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        #region User Registration infomation
+        #region UI User Registration infomation
         private string? _password;
 
         public string? Password
@@ -57,9 +57,7 @@ namespace WindowsPet.VM
                 OnPropertyChanged();
             }
         }
-
         private string? _username;
-
         public string? Username
         {
             get { return _username; }
@@ -71,54 +69,47 @@ namespace WindowsPet.VM
         }
         #endregion
         public ICommand RegisterCommand { get; set; }
-
         public RegisterVM()
         {
             // Constructor logic here
             RegisterCommand = new RelayCommands(OnRegisterButtonClicked);
         }
-
+        /// <summary>
+        /// On Register Button Clicked 
+        /// </summary>
         private async void OnRegisterButtonClicked(object obj)
         {
-            #region Get All Property In This Class
-            Type type = this.GetType();
-            PropertyInfo[] properties = type.GetProperties();
-            foreach (PropertyInfo property in properties)
-            {
-                var value = property.GetValue(this);
-                if (value == null)
-                {
-                    // Handle null value
-                    Console.WriteLine($"Property {property.Name} is null.");
-                    return;
-                }
-                
-            }
+            #region Get All Property In This Class(Current Not Used)
+            //Type type = this.GetType();
+            //PropertyInfo[] properties = type.GetProperties();
+            //foreach (PropertyInfo property in properties)
+            //{
+            //    var value = property.GetValue(this);
+            //    if (value == null)
+            //    {
+            //        // Handle null value
+            //        Console.WriteLine($"Property {property.Name} is null.");
+            //        return;
+            //    }
+            //}
             #endregion
-            if (Password!=null&& Password == ConfirmPassword && VerifyInput.IsStrongPassword(Password))
+            
+            #region Check Password And Email and send to server
+            if (VerifyInput.IsPasswordEqual(Password, ConfirmPassword)&& VerifyInput.IsStrongPassword(Password))
             {
                 // Call the registration logic here
-                await LoginManager.Instance.RegisterationRequest(new RegisterCommand
-                {
-                    UserToken = "",
-                    Name = Username,
-                    Password = Password,
-                    Email = Email
-                });                
+                await LoginManager.Instance.RegisterationRequest(DataFormat.GetRegisterCommand(Username,Email,Password));                
             }
-            else if(Password != ConfirmPassword)
+            else if(!VerifyInput.IsPasswordEqual(Password, ConfirmPassword))
             {
-                Console.WriteLine("Passwords does not match.");
+                ErrorHandle.ShowError("Passwords does not match.");
             }
             else
             {
-                Console.WriteLine("Password is not strong enough.");
+                ErrorHandle.ShowError("Password is not strong enough.");
             }
-            
-
+            #endregion
         }
-
-        // Add properties and methods for the RegisterVM class here
         private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

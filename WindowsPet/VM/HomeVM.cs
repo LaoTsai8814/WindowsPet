@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using WindowsPet.Command;
+using WindowsPet.Models;
 using WindowsPet.Views.Tabs;
 using WindowsPet.Views.Ucontrol;
 
@@ -17,6 +18,8 @@ namespace WindowsPet.VM
     {
         public event PropertyChangedEventHandler? PropertyChanged;
         public Dictionary<string, ICommand>? SideButtonCommand { get; }
+
+        public static Action<object>? ChangeTab;
 
         private object _currentTab;
 
@@ -41,9 +44,13 @@ namespace WindowsPet.VM
                 { "Setting", new RelayCommands((object obj)=>{}) }
 
             };
-            CurrentTab = new HomeTab();
+            ChangeTab += OnTabChanging;
+            TabManager.Instance.GetTab<HomeTab>();
         }
-
+        private void OnTabChanging(object view)
+        {
+            CurrentTab = view;
+        }
 
         protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {

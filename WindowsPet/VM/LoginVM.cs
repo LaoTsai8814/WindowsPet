@@ -52,7 +52,7 @@ namespace WindowsPet.VM
         #endregion
         #region Login Command
         public ICommand LoginCommand { get; set; } 
-        private void OnLoginButtonClicked(object obj) 
+        private async void OnLoginButtonClicked(object obj) 
         {
             if (Username!=null&&Password!=null)
             {
@@ -71,7 +71,7 @@ namespace WindowsPet.VM
                 {
                     cmd.Email = Username;
                 }
-                LoginManager.Instance.NormalLogin(cmd);
+                await LoginManager.Instance.NormalLogin(cmd);
                 
             }
             Username = string.Empty;

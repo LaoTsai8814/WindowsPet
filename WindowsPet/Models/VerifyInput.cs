@@ -7,9 +7,15 @@ using System.Net.Mail;
 
 namespace WindowsPet.Models
 {
+    /// <summary>
+    /// Model To Check If UserInput Is Vaild
+    /// </summary>
+    /// <param name="email" name="name"></param>
+    /// <returns></returns>
     internal static class VerifyInput
     {
-        public static bool IsValidEmailFormat(string email)
+        
+        public static bool IsValidEmailFormat(string? email)
         {
             try
             {
@@ -21,7 +27,7 @@ namespace WindowsPet.Models
                 return false;
             }
         }
-        public static bool IsStrongPassword(string password)
+        public static bool IsStrongPassword(string? password)
         {
             if (password.Length < 8)
                 return false;
@@ -32,6 +38,12 @@ namespace WindowsPet.Models
             bool hasSymbol = password.Any(ch => !char.IsLetterOrDigit(ch));
 
             return hasUpper && hasLower && hasDigit && hasSymbol;
+        }
+        public static bool IsPasswordEqual(string? password, string? confirmPassword)
+        {
+            if(string.IsNullOrEmpty(password) || string.IsNullOrEmpty(confirmPassword))
+                return false;
+            return password == confirmPassword;
         }
     }
 }

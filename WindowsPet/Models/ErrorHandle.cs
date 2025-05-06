@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace WindowsPet.Models
 {
@@ -10,6 +11,8 @@ namespace WindowsPet.Models
     {
         private static ErrorHandle? _instance;
         public static ErrorHandle Instance => _instance ??= new ErrorHandle();
+        
+
         public ErrorHandle()
         {
             
@@ -22,6 +25,11 @@ namespace WindowsPet.Models
         {
             Console.WriteLine(s);
         }
+        public static void ShowError(string error)
+        {
+            MessageBox.Show(error, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
     }
     
         

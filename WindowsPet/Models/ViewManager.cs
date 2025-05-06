@@ -33,6 +33,23 @@ namespace WindowsPet.Models
                     return newView;
                 }               
         }
+        public T? GetViewObject<T>() where T : class
+        {
+            var type = typeof(T);
+            if (ViewList.TryGetValue(type, out var view))
+            {
+                // If the view is already created, return it
+                // This is a simple way to check if the view is of the correct type
+                MainWindowVM._changeViewAction?.Invoke(view);
+                return view as T;
+            }
+            else
+            {
+                var newView = Activator.CreateInstance<T>();
+                ViewList[type] = newView;
+                return newView;
+            }
+        }
         private ViewManager(){}
     }
 }
