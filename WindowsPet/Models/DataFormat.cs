@@ -12,6 +12,13 @@ namespace WindowsPet.Models
     /// <summary>
     /// This class is used to define the data format for the application.
     /// </summary>
+    public enum PetType
+    {
+        Non_Define,
+        PopularPet,
+        UserPet,
+
+    }
     #region Network Json Format
     [Serializable]
     public class Command
@@ -36,19 +43,20 @@ namespace WindowsPet.Models
         /// <param name="email"></param>
         /// <param name="password"></param>
         /// <param name="token"></param>
-        
+
         public RegisterCommand()
         {
-            
+
         }
     }
 
-    
+
     [Serializable]
     public class GoogleLoginCommand : Command
     {
         public required string Name;
         public required string Email;
+
     }
     [Serializable]
     public class LoginCommand : Command
@@ -62,6 +70,7 @@ namespace WindowsPet.Models
     {
         public required string RequestName;
         public required bool RequestStatus;
+        public string StatusDescription = "";
         public object? RespondParameter;
     }
     [Serializable]
@@ -77,6 +86,21 @@ namespace WindowsPet.Models
             get => _usrpets;
             set => _usrpets = value;
         }
+        List<Pet>? _popularpets;
+        public List<Pet>? PopularPet
+        {
+            get => _popularpets;
+            set => _popularpets = value;
+        }
+        public decimal Credit { get; set; }
+
+    }
+    [Serializable]
+    public class  PetPurchase : Command
+    {
+        public required int PetId; 
+        public required decimal Credit;
+        public required decimal Price;
 
     }
     #endregion
@@ -94,57 +118,97 @@ namespace WindowsPet.Models
         public string Name { get; set; } = string.Empty;
         public string? ImagePath { get; set; }
 
+        private decimal price;
+
+        public decimal Price
+        {
+            get { return price; }
+            set { price = value; }
+        }
+
+        public string? Description { get; set; } = string.Empty;
+        public bool IsAdopted { get; set; } = false;
+
+        public bool IsPopular { get; set; }
+
+
         public List<string>? GifPath { get; set; } = new();
 
-        public Pet(int id, string name)
+        public Pet(int id, string name, bool isPopular = false,decimal price=0)
         {
             Id = id;
             Name = name;
-            ImagePath = Path.Combine(Path.GetTempPath(),$@"{name}",$@"{name}.png");
-            
-            if(Directory.Exists(Path.Combine(Path.GetTempPath(), $@"{name}")))
-            {
-                string[] GifFolder = Directory.GetFiles(Path.Combine(Path.GetTempPath(), $@"{name}"));
+            IsPopular = isPopular;
+            Price = price;
 
-                foreach (var file in GifFolder)
+            // 根據 IsPopular 決定資料夾名稱
+            if (IsPopular)
+            {
+                var pngresult = FileManager.Instance.PopularPetFileLocationDict[name].Where(str => str.EndsWith(".png"));
+                if (pngresult.Count() > 0)
                 {
-                    if(file!=null&&file.EndsWith(".gif"))
-                        GifPath.Add(file);
+                    ImagePath = pngresult.First();
                 }
-            }  
+                var gifresult = FileManager.Instance.PopularPetFileLocationDict[name].Where(str => str.EndsWith(".gif"));
+                if(gifresult.Count() > 0)
+                {
+                    foreach (var file in gifresult)
+                    {
+                        GifPath.Add(file);
+                    }
+                }
+            }
+            else
+            {
+                var pngresult = FileManager.Instance.UserPetFileLocationDict[name].Where(str => str.EndsWith(".png"));
+                if (pngresult.Count() > 0)
+                {
+                    ImagePath = pngresult.First();
+                }
+                var gifresult = FileManager.Instance.UserPetFileLocationDict[name].Where(str => str.EndsWith(".gif"));
+                if (gifresult.Count() > 0)
+                {
+                    foreach (var file in gifresult)
+                    {
+                        GifPath.Add(file);
+                    }
+                }
+            }
+            
+
+
         }
         public List<PersonalData> Owner { get; set; } = new();
-
-
 
     }
 
     #endregion
 
     #region UI Data Format
-    public class  UserPets
+    public class UIPets
     {
-        private string image;
+        private string? image;
 
-        public string Image
+        public string? Image
         {
             get { return image; }
             set { image = value; }
         }
 
-        private string name;
+        private string? name;
 
-        public string Name
+        public string? Name
         {
             get { return name; }
             set { name = value; }
         }
 
-        public UserPets(string name, string image)
+        public UIPets(string name, string image)
         {
             Name = name;
             Image = image;
         }
+        List<string> gifpath = new();
     }
     #endregion
 
@@ -167,11 +231,11 @@ namespace WindowsPet.Models
                     Password = password
                 };
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 ErrorHandle.ShowError(ex.Message);
                 throw new Exception("Error creating RegisterCommand: " + ex.Message);
-                
+
             }
 
         }

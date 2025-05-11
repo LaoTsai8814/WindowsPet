@@ -20,12 +20,12 @@
             <Grid Grid.Column="0">
                 <Border Style="{StaticResource DashBoardCard}">
                     <!--Bad Name But It Represent Current Online Pet-->
-                    <uc:DashBoardCardUserPet DashBoardName="在線寵物" OnlinePets="{Binding OnlinePets, Mode=TwoWay}"/>
+                    <uc:DashBoardCardUserPet DashBoardName="在線寵物"  OnlinePets="{Binding OnlinePets, Mode=TwoWay}"/>
                 </Border>
             </Grid>
             <Grid Grid.Column="1">
                 <Border Style="{StaticResource DashBoardCard}">
-                    <uc:DashBoardCardUserPet DashBoardName="熱門寵物" OnlinePets="{Binding PopularPets, Mode=TwoWay}"/>
+                    <uc:DashBoardCardUserPet DashBoardName="熱門寵物" OnPetClick="{Binding OnPopularPetClick}" OnlinePets="{Binding PopularPets, Mode=TwoWay}"/>
                 </Border>
             </Grid>
             <Grid Grid.Column="2">
@@ -36,7 +36,7 @@
         </Grid>
         <Grid Grid.Row="1">
             <Border Style="{StaticResource DashBoardCard}">
-                <uc:DashBoardCardUserPet DashBoardName="我的寵物" OnPetClick="{Binding OnPetClick}" OnlinePets="{Binding MyFavoritePets, Mode=TwoWay}"/>
+                <uc:DashBoardCardUserPet DashBoardName="我的寵物" OnPetClick="{Binding OnUserPetClick}" OnlinePets="{Binding MyFavoritePets, Mode=TwoWay}"/>
             </Border>
         </Grid>
     </Grid>

@@ -48,15 +48,38 @@ namespace WindowsPet.Models
 			get { return _token; }
 			set { _token = value; }
 		}
+
+		private decimal _credit;
+
+		public decimal Credit
+		{
+			get { return _credit; }
+			set { _credit = value; }
+		}
+
 		#endregion
 
-		public List<Pet>? UserPets;
-
-
-
-
-
-
+		public List<Pet>? UserPets=new();
 
     }
+    public static class CurrentUser
+    {
+        #region
+        private static string? _token;
+
+        public static string? Token
+        {
+            get { return _token; }
+            set { _token = value; }
+        }
+		private static decimal _credit;
+
+		public static decimal Credit
+		{
+			get { return _credit; }
+			set { _credit = value; }
+		}
+
+		#endregion
+	}
 }

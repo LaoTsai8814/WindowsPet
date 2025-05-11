@@ -7,7 +7,7 @@
              xmlns:vm="clr-namespace:WindowsPet.VM.TabsVM"
              >
     <Button Style="{StaticResource Radiusbutton}"  Command="{Binding OnPetClick, RelativeSource={RelativeSource AncestorType=local:DashBoardCardUserPet}}"
-        CommandParameter="{Binding PetImage, RelativeSource={RelativeSource AncestorType=local:UserPet}}" >
+        CommandParameter="{Binding PetName, RelativeSource={RelativeSource AncestorType=local:UserPet}}" >
         
         <Grid>
             <Grid.RowDefinitions>

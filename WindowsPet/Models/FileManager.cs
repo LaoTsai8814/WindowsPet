@@ -1,5 +1,6 @@
 ﻿using Renci.SshNet;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,6 +21,10 @@ namespace WindowsPet.Models
 
         public event Action<string,string>? OnPopluarPetDownloadComplete;
         public event Action<string,string>? OnUserPetDownloadComplete;
+
+        public ConcurrentDictionary<string, List<string>> PopularPetFileLocationDict = new();
+        public ConcurrentDictionary<string, List<string>> UserPetFileLocationDict = new();
+
         public static FileManager Instance => _instance ??= new();
         
         
@@ -52,9 +57,11 @@ namespace WindowsPet.Models
                 IEnumerable<Renci.SshNet.Sftp.ISftpFile> PetFolder = sftp.ListDirectory(@$"/PopularPet/{folder.Name}");
                 if (folder.Name != "." && folder.Name != "..")
                 {
-                    if (!Directory.Exists(Path.Combine(Path.GetTempPath(), "PopularPet", folder.Name)))
+                    PopularPetFileLocationDict.TryAdd(folder.Name, new List<string>());
+
+                    if (!Directory.Exists(Path.Combine(FileLocation.PopularPet, folder.Name)))
                     {
-                        Directory.CreateDirectory(Path.Combine(Path.GetTempPath(),"PopularPet", folder.Name));
+                        Directory.CreateDirectory(Path.Combine(FileLocation.PopularPet, folder.Name));
                         Console.WriteLine("資料夾已建立：" + @$"/PopularPet/{folder.Name}");
                     }
                     foreach (var file in PetFolder)
@@ -64,12 +71,14 @@ namespace WindowsPet.Models
                         {
                             try
                             {
-                                using (var fileStream = System.IO.File.Create(Path.Combine(Path.GetTempPath(), "PopularPet", folder.Name, file.Name)))
+                                using (var fileStream = System.IO.File.Create(Path.Combine(FileLocation.PopularPet, folder.Name, file.Name)))
                                 {
                                     sftp.DownloadFile(@$"{file.FullName}", fileStream);
+                                    PopularPetFileLocationDict[folder.Name].Add(Path.Combine(FileLocation.PopularPet, folder.Name, file.Name));
+
                                     if (file.FullName.EndsWith(".png"))
                                     {
-                                        OnPopluarPetDownloadComplete?.Invoke(folder.Name, Path.Combine(Path.GetTempPath(), "PopularPet", folder.Name, file.Name));
+                                        OnPopluarPetDownloadComplete?.Invoke(folder.Name, Path.Combine(FileLocation.PopularPet, folder.Name, file.Name));
                                     }
                                 }
 
@@ -114,9 +123,12 @@ namespace WindowsPet.Models
                 {
                     IEnumerable<Renci.SshNet.Sftp.ISftpFile> PetFolder
                 = sftp.ListDirectory($@"/AllPet/{pet.Name}");
-                    if (!Directory.Exists(Path.Combine(Path.GetTempPath(), "UserPet", pet.Name)))
+                    UserPetFileLocationDict.TryAdd(pet.Name, new());
+
+                    if (!Directory.Exists(Path.Combine(FileLocation.UserPet, pet.Name)))
                     {
-                        Directory.CreateDirectory(Path.Combine(Path.GetTempPath(),"UserPet", pet.Name));
+
+                        Directory.CreateDirectory(Path.Combine(FileLocation.UserPet, pet.Name));
                         Console.WriteLine("資料夾已建立：" + @$"{pet.Name}");
                     }
                     foreach (var file in PetFolder)
@@ -128,13 +140,13 @@ namespace WindowsPet.Models
                         }
                         try
                         {
-                            using (var fileStream = System.IO.File.Create(Path.Combine(Path.GetTempPath(), "UserPet", pet.Name, file.Name)))
+                            using (var fileStream = System.IO.File.Create(Path.Combine(FileLocation.UserPet, pet.Name,file.Name)))
                             {
                                 sftp.DownloadFile(@$"{file.FullName}", fileStream);
+                                UserPetFileLocationDict[pet.Name].Add(Path.Combine(FileLocation.UserPet, pet.Name, file.Name));
                                 if(file.FullName.EndsWith(".png"))
                                 {
-                                     OnUserPetDownloadComplete?.Invoke(pet.Name, Path.Combine(Path.GetTempPath(), "UserPet", pet.Name, file.Name));
-                                    
+                                     OnUserPetDownloadComplete?.Invoke(pet.Name, Path.Combine(FileLocation.UserPet, pet.Name, file.Name));
                                 }
                             }
                         }
@@ -181,7 +193,18 @@ namespace WindowsPet.Models
         }
 
 
+        public void OnExit()
+        {
 
+        }
+        /// <summary>
+        /// Base File Location
+        /// </summary>
+        static class FileLocation
+        {
+            public static readonly string PopularPet = Path.Combine(Path.GetTempPath(), "PopularPet");
+            public static readonly string UserPet = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DesktopPet", "MyPet");
+        }
         static class FTPSetting
         {
             public static string host = "192.168.0.104";

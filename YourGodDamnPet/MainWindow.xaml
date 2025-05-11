@@ -4,14 +4,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:YourGodDamnPet"
+        xmlns:uc="clr-namespace:YourGodDamnPet.UControl"
         mc:Ignorable="d"
          Title="MainWindow" SizeToContent="WidthAndHeight" Topmost="True" ResizeMode="NoResize" AllowsTransparency="True" WindowStyle="None" Background="Transparent" WindowStartupLocation="Manual" ShowInTaskbar="False">
 
     <Grid >
-        <StackPanel>
-            <TextBlock Text="你是大傻逼" Foreground="#EDEEEE" FontSize="50" HorizontalAlignment="Center"></TextBlock>
-            <Image x:Name="PETImage" Width="150" Height="150"/>
-        </StackPanel>
+        <uc:DisplayPet></uc:DisplayPet>
         
     </Grid>
 </Window>

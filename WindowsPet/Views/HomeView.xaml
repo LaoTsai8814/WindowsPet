@@ -19,8 +19,8 @@
             </Grid.RowDefinitions>
             <Grid Grid.Column="0" Grid.ColumnSpan="2">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <uc:SideButton Icon="WindowMinimize" ></uc:SideButton>
-                    <uc:SideButton Icon="WindowClose" ></uc:SideButton>
+                    <uc:SideButton Icon="WindowMinimize" Command="{Binding MinimizeCommand}"></uc:SideButton>
+                    <uc:SideButton Icon="WindowClose" Command="{Binding CloseCommand}"></uc:SideButton>
                 </StackPanel>
             </Grid>
             <Grid Grid.Column="0" Grid.Row="1" Grid.RowSpan="2">

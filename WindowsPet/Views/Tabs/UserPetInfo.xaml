@@ -1,0 +1,25 @@
+﻿<UserControl x:Class="WindowsPet.Views.Tabs.UserPetInfo"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:WindowsPet.Views.Tabs"
+             xmlns:uc="clr-namespace:WindowsPet.Views.Ucontrol">
+    <Border Background="#1e2e44" CornerRadius="20" Padding="20">
+        <StackPanel Background="#1e2e44">
+            <!-- 寵物圖片 -->
+            <uc:SwitchLRImageBox PreviousImageCommand="{Binding PreviousImageCommand}" NextImageCommand="{Binding NextImageCommand}" />
+
+            <!-- 名稱與描述 -->
+            <TextBlock Style="{StaticResource TextblockStyle}" Text="{Binding Pet.Name}" />
+            <TextBlock Style="{StaticResource TextblockStyle}" Text="{Binding Pet.Description}" TextWrapping="Wrap" />
+
+            <!-- 使用與移除按鈕 -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
+                <Button Content="返回" Style="{StaticResource Pagesidebutton}" Command="{Binding BackCommand}" Margin="15" />
+                <Button Content="使用" Style="{StaticResource Pagesidebutton}" Command="{Binding UseCommand}" CommandParameter="{Binding Pet.Id}" Margin="15" />
+                <Button Content="移除" Style="{StaticResource Pagesidebutton}" Command="{Binding RemoveCommand}" CommandParameter="{Binding Pet.Id}" Margin="15" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

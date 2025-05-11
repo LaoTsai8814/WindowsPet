@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using WindowsPet.Command;
 using WindowsPet.Models;
@@ -21,21 +22,39 @@ namespace WindowsPet.VM
 
         public static Action<object>? ChangeTab;
 
-        private object _currentTab;
+        public ICommand MinimizeCommand { get; set; }
 
-        public object CurrentTab
+        public ICommand CloseCommand { get; set; }
+
+        private object? _currentTab;
+
+        public object? CurrentTab
         {
             get { return _currentTab; }
-            set { _currentTab = value; }
+            set 
+            {
+                _currentTab = value;
+                OnPropertyChanged();
+
+
+            }
         }
 
        
 
         public HomeVM()
         {
+            MinimizeCommand = new RelayCommands((object obj) =>
+            {
+                Application.Current.MainWindow.WindowState = WindowState.Minimized;
+            });
+            CloseCommand = new RelayCommands((object obj) =>
+            {
+                Application.Current.Shutdown();
+            });
             SideButtonCommand = new Dictionary<string, ICommand>
             {
-                { "Home", new RelayCommands((object obj)=>{}) },
+                { "Home", new RelayCommands((object obj)=>{TabManager.Instance.GetTab<HomeTab>();}) },
                 { "MonitorDashboard", new RelayCommands((object obj)=>{}) },
                 { "Shopping", new RelayCommands((object obj)=>{}) },
                 { "Chat", new RelayCommands((object obj)=>{}) },

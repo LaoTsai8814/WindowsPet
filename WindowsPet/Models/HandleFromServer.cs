@@ -58,8 +58,8 @@ namespace WindowsPet.Models
                 if (hometabVM == null) return;
 
                 
-                hometabVM.MyFavoritePets ??= new ObservableCollection<UserPets>();
-                hometabVM.MyFavoritePets.Add(new UserPets(name, image));
+                hometabVM.MyFavoritePets ??= new ObservableCollection<UIPets>();
+                hometabVM.MyFavoritePets.Add(new UIPets(name, image));
             });
 
 
@@ -79,8 +79,8 @@ namespace WindowsPet.Models
                 var homeVM = ViewModelManager.Instance?.GetViewModel<HomeTabVM>(homeView);
                 if (homeVM == null) return;
 
-                homeVM.PopularPets ??= new ObservableCollection<UserPets>();
-                homeVM.PopularPets.Add(new UserPets(name, image));
+                homeVM.PopularPets ??= new ObservableCollection<UIPets>();
+                homeVM.PopularPets.Add(new UIPets(name, image));
             });
             
 
@@ -118,6 +118,7 @@ namespace WindowsPet.Models
                 Register<LoginCommand>(OnResoluteName);
                 Register<GoogleLoginCommand>(OnResoluteName);
                 Register<UserDataRespond>(OnResoluteName);
+                Register<PetPurchase>(OnResoluteName);
                 if (!status.RequestStatus)
                 {
                     return;
@@ -141,6 +142,9 @@ namespace WindowsPet.Models
                 Console.WriteLine($"Type is Invaild :{ex}");
             }
         }
+
+        
+
         /// <summary>
         /// This will convert the JObject to the target type
         /// Jobject is a json object that contain defined in serializable data
@@ -203,19 +207,43 @@ namespace WindowsPet.Models
 
             
         }
+        
         private async void OnResoluteName(UserDataRespond respond)
         {
             if (respond.UserPet == null || respond == null)
             {
                 return;
             }
+            CurrentUser.Credit = respond.Credit;
             AppDbContext.Instance.AddPetListToUser(respond.UserToken, respond.UserPet);
+            AppDbContext.Instance.AddPopularPetToTable(respond.PopularPet);
             await FileManager.Instance.DownloadUserPet(respond.UserPet);
         }
+
+
+        private void OnResoluteName(PetPurchase purchase)
+        {
+            if (purchase == null)
+            {
+                return;
+            }
+            CurrentUser.Credit =  purchase.Credit;
+            AppDbContext.Instance.VerifyPetPrice(purchase.PetId,purchase.Price);
+            AppDbContext.Instance.AddPetToUser(CurrentUser.Token, purchase.PetId);
+            AppDbContext.Instance.UpdateUserCredit(CurrentUser.Token, purchase.Credit);
+            
+            //throw new NotImplementedException();
+        }
         #endregion
+
+
+
+
         #region Command To PersonalData Convertion Funtions
         private PersonalData CommandPersonalDataConvertion(GoogleLoginCommand googlelogin)
         {
+            CurrentUser.Token = googlelogin.UserToken;
+
             return new PersonalData
             {
                 Name = googlelogin.Name,
@@ -225,12 +253,14 @@ namespace WindowsPet.Models
         }
         private PersonalData CommandPersonalDataConvertion(LoginCommand login)
         {
+            CurrentUser.Token = login.UserToken;
             return new PersonalData
             {
                 Name = login.Name,
                 Token = login.UserToken,
                 Email = login.Email,
                 UserPassword = login.Password,
+
             };
         }
         #endregion 

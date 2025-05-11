@@ -9,12 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="PictureAsset\hehe.png" />
-    <None Remove="PictureAsset\home_test_-export.png" />
-    <None Remove="PictureAsset\moster_1.png" />
-    <None Remove="PictureAsset\moster_12.png" />
-    <None Remove="PictureAsset\moster_31.png" />
-    <None Remove="PictureAsset\moster_3w.png" />
+    <Compile Remove="PictureAsset\**" />
+    <EmbeddedResource Remove="PictureAsset\**" />
+    <None Remove="PictureAsset\**" />
+    <Page Remove="PictureAsset\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,17 +36,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="PictureAsset\hehe.png" />
-    <Resource Include="PictureAsset\home_test_-export.png" />
-    <Resource Include="PictureAsset\moster_1.png" />
-    <Resource Include="PictureAsset\moster_12.png" />
-    <Resource Include="PictureAsset\moster_31.png" />
-    <Resource Include="PictureAsset\moster_3w.png" />
-    <Resource Include="PictureAsset\dog.png" />
+    <Folder Include="Asset\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Asset\" />
+    <ProjectReference Include="..\YourGodDamnPet\YourGodDamnPet.csproj" />
   </ItemGroup>
 
 </Project>

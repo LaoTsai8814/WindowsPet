@@ -2,6 +2,7 @@
 using System.Configuration;
 using System.Data;
 using System.Windows;
+using WindowsPet.Models;
 
 namespace WindowsPet
 {
@@ -26,6 +27,14 @@ namespace WindowsPet
             {
                 key?.SetValue(exeName, 11001, RegistryValueKind.DWord); // 11001 = IE11 mode
             }
+        }
+        protected override void OnExit(ExitEventArgs e)
+        {
+
+            FileManager.Instance.OnExit();
+            base.OnExit(e);
+            // Clean up resources or perform any necessary actions before the application exits
+            // For example, you can close any open connections or save user settings
         }
     }
 

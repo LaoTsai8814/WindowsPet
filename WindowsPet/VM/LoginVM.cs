@@ -52,6 +52,10 @@ namespace WindowsPet.VM
         #endregion
         #region Login Command
         public ICommand LoginCommand { get; set; } 
+
+        public ICommand MinimizeCommand { get; set; }
+
+        public ICommand CloseCommand { get; set; }
         private async void OnLoginButtonClicked(object obj) 
         {
             if (Username!=null&&Password!=null)
@@ -108,6 +112,14 @@ namespace WindowsPet.VM
         #endregion
         public LoginVM()
         {
+            MinimizeCommand = new RelayCommands((object obj) =>
+            {
+                Application.Current.MainWindow.WindowState = WindowState.Minimized;
+            });
+            CloseCommand = new RelayCommands((object obj) =>
+            {
+                Application.Current.Shutdown();
+            });
             AppDbContext.Instance.ConnectToDB();
             Task.Run(async () =>
             {

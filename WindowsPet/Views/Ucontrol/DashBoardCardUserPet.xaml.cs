@@ -28,15 +28,15 @@ namespace WindowsPet.Views.Ucontrol
         }
 
 
-        public ObservableCollection<UserPets> OnlinePets
+        public ObservableCollection<UIPets> OnlinePets
         {
-            get { return (ObservableCollection<UserPets>)GetValue(OnlinePetsProperty); }
+            get { return (ObservableCollection<UIPets>)GetValue(OnlinePetsProperty); }
             set { SetValue(OnlinePetsProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for UserPets.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty OnlinePetsProperty =
-            DependencyProperty.Register("OnlinePets", typeof(ObservableCollection<UserPets>), typeof(DashBoardCardUserPet));
+            DependencyProperty.Register("OnlinePets", typeof(ObservableCollection<UIPets>), typeof(DashBoardCardUserPet));
 
 
         public string DashBoardName

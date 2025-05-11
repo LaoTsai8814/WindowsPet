@@ -40,8 +40,8 @@ namespace WindowsPet.Models
                     #region Send It To Server
                     await JsonSerialize.SerializeAndSendJson<GoogleLoginCommand>(new GoogleLoginCommand
                     {
-                        Email = userdata.Email,
-                        Name = userdata.Name,
+                        Email = userdata.Email!,
+                        Name = userdata.Name!,
                         UserToken = token
                     });
                     #endregion
