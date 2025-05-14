@@ -31,7 +31,8 @@ namespace WindowsPet
         protected override void OnExit(ExitEventArgs e)
         {
 
-            FileManager.Instance.OnExit();
+            AppDbContext.Instance.DeletePopularPet();
+
             base.OnExit(e);
             // Clean up resources or perform any necessary actions before the application exits
             // For example, you can close any open connections or save user settings

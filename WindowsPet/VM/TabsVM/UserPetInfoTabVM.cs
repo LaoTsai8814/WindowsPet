@@ -60,7 +60,7 @@ namespace WindowsPet.VM.TabsVM
         public ICommand PreviousImageCommand { get; set; }
         public ICommand NextImageCommand { get; set; }
 
-
+        
         public UserPetInfoTabVM()
         {
             UseCommand = new RelayCommands(OnUse);
@@ -77,13 +77,13 @@ namespace WindowsPet.VM.TabsVM
 
         private void OnUse(object? obj)
         {
-            PetStartup petstartup = new();
-            petstartup.ShowWindow(GifUri);
+            DisplayPetManager.Instance.DisplayPet(GifUri);
             //throw new NotImplementedException();
         }
 
         private void OnRemove(object? obj)
         {
+            DisplayPetManager.Instance.RemoveDisplayPet(GifUri);
             //throw new NotImplementedException();
         }
 

@@ -55,7 +55,7 @@ namespace WindowsPet.VM
             SideButtonCommand = new Dictionary<string, ICommand>
             {
                 { "Home", new RelayCommands((object obj)=>{TabManager.Instance.GetTab<HomeTab>();}) },
-                { "MonitorDashboard", new RelayCommands((object obj)=>{}) },
+                { "Friends", new RelayCommands((object obj)=>{TabManager.Instance.GetTab<FriendTab>(); }) },
                 { "Shopping", new RelayCommands((object obj)=>{}) },
                 { "Chat", new RelayCommands((object obj)=>{}) },
                 { "Medal", new RelayCommands((object obj)=>{}) },

@@ -17,7 +17,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <Grid Grid.Column="0" Grid.ColumnSpan="2">
+            <Grid Grid.Column="0" Grid.ColumnSpan="2" MouseLeftButtonDown="DragBar_MouseLeftButtonDown" Background="Transparent">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <uc:SideButton Icon="WindowMinimize" Command="{Binding MinimizeCommand}"></uc:SideButton>
                     <uc:SideButton Icon="WindowClose" Command="{Binding CloseCommand}"></uc:SideButton>
@@ -29,7 +29,7 @@
                     </StackPanel>
                     <StackPanel>
                         <uc:SideButton Icon="Home" Command="{Binding SideButtonCommand[Home]}"></uc:SideButton>
-                        <uc:SideButton Icon="MonitorDashboard" Command="{Binding SideButtonCommand[MonitorDashboard]}"></uc:SideButton>
+                        <uc:SideButton Icon="AccountMultiple" Command="{Binding SideButtonCommand[Friends]}"></uc:SideButton>
                         <uc:SideButton Icon="Shopping" Command="{Binding SideButtonCommand[Shopping]}"/>
                         <uc:SideButton Icon="Chat" Command="{Binding SideButtonCommand[Chat]}"/>
                         <uc:SideButton Icon="Medal" Command="{Binding SideButtonCommand[Medal]}"/>

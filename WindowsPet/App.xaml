@@ -4,6 +4,8 @@
              xmlns:local="clr-namespace:WindowsPet"
              xmlns:ed ="http://schemas.microsoft.com/expression/2010/drawing"
              xmlns:Icon="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:MaterialDesignThemes="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
+
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
@@ -11,6 +13,9 @@
                 <ResourceDictionary Source="DefaultDict.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.Blue.xaml" />
+                <MaterialDesignThemes:BundledTheme BaseTheme="Light" PrimaryColor="Indigo" SecondaryColor="Lime" />
+
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
 

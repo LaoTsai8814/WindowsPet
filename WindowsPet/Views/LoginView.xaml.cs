@@ -33,7 +33,12 @@ namespace WindowsPet.Views
                 Console.WriteLine("ViewModel NULL");
             DataContext = vm;
         }
+        private void DragBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            MainWindow._ondragscreen?.Invoke(sender, e);
+        }
 
-        
+
+
     }
 }

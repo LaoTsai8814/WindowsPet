@@ -17,11 +17,20 @@ namespace WindowsPet
     /// </summary>
     public partial class MainWindow : Window
     {
+        public static Action<object,MouseButtonEventArgs>? _ondragscreen;
         MainWindowVM vm = new MainWindowVM();
         public MainWindow()
         {
             InitializeComponent();
             DataContext = vm;
+            _ondragscreen = DragBar_MouseLeftButtonDown;
+        }
+        private void DragBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ButtonState == MouseButtonState.Pressed)
+            {
+                this.DragMove(); // 拖曳視窗
+            }
         }
     }
 }

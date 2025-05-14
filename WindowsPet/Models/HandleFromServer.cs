@@ -117,7 +117,7 @@ namespace WindowsPet.Models
                 Register<RegisterCommand>(OnResoluteName);
                 Register<LoginCommand>(OnResoluteName);
                 Register<GoogleLoginCommand>(OnResoluteName);
-                Register<UserDataRespond>(OnResoluteName);
+                Register<UserDataRequest>(OnResoluteName);
                 Register<PetPurchase>(OnResoluteName);
                 if (!status.RequestStatus)
                 {
@@ -142,9 +142,6 @@ namespace WindowsPet.Models
                 Console.WriteLine($"Type is Invaild :{ex}");
             }
         }
-
-        
-
         /// <summary>
         /// This will convert the JObject to the target type
         /// Jobject is a json object that contain defined in serializable data
@@ -208,7 +205,7 @@ namespace WindowsPet.Models
             
         }
         
-        private async void OnResoluteName(UserDataRespond respond)
+        private async void OnResoluteName(UserDataRequest respond)
         {
             if (respond.UserPet == null || respond == null)
             {
@@ -217,6 +214,9 @@ namespace WindowsPet.Models
             CurrentUser.Credit = respond.Credit;
             AppDbContext.Instance.AddPetListToUser(respond.UserToken, respond.UserPet);
             AppDbContext.Instance.AddPopularPetToTable(respond.PopularPet);
+            AppDbContext.Instance.UpdateUserCredit(respond.UserToken, respond.Credit);
+            AppDbContext.Instance.AddFriendToUser(respond.FriendList);
+            AppDbContext.Instance.AddPendingFriendToUser(respond.PendingFriendList);
             await FileManager.Instance.DownloadUserPet(respond.UserPet);
         }
 
@@ -234,6 +234,9 @@ namespace WindowsPet.Models
             
             //throw new NotImplementedException();
         }
+        
+        
+
         #endregion
 
 

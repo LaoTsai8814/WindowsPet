@@ -11,11 +11,12 @@ namespace YourGodDamnPet
     public class PetStartup
     {
 
-        public void ShowWindow(Uri gifuri)
+        public void ShowWindow(Uri gifuri,out MainWindow mainwindow)
         {
             DisplayPet._petPath = gifuri;
             var window = new MainWindow();
             window.Show(); // 或 window.Show();
+            mainwindow = window;
         }
 
     }

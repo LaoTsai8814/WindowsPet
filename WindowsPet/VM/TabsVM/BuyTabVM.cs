@@ -25,15 +25,12 @@ namespace WindowsPet.VM.TabsVM
             get 
             {
                 Gifuri = new Uri(GIFList[_currentImageIndex], UriKind.Absolute);
-
                 return Gifuri; 
-            
             }
             set 
             {
                 Gifuri = new Uri(GIFList[_currentImageIndex], UriKind.Absolute);
                 OnPropertyChanged();
-            
             }
         }
         public ObservableCollection<string>? GIFList { get; set; } = new ObservableCollection<string>

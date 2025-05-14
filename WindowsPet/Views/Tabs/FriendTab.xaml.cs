@@ -13,28 +13,19 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using WindowsPet.Models;
-using WindowsPet.VM;
+using WindowsPet.VM.TabsVM;
 
-namespace WindowsPet.Views
+namespace WindowsPet.Views.Tabs
 {
     /// <summary>
-    /// HomeView.xaml 的互動邏輯
+    /// FriendTab.xaml 的互動邏輯
     /// </summary>
-    public partial class HomeView : UserControl
+    public partial class FriendTab : UserControl
     {
-        
-        public HomeView()
+        public FriendTab()
         {
             InitializeComponent();
-            HomeVM? vm = ViewModelManager.Instance.GetViewModel<HomeVM>(this);
-            if (vm != null)
-            {
-                DataContext = vm;
-            }
-        }
-        private void DragBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            MainWindow._ondragscreen(sender, e);
+            DataContext = ViewModelManager.Instance.GetViewModel<FriendTabVM>(this);
         }
     }
 }

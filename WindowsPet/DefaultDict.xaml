@@ -283,4 +283,41 @@ CornerRadius="5">
             </Setter.Value>
         </Setter>
     </Style>
+    <!-- 自訂 ListBox 滾動條樣式 -->
+    <Style x:Key="CustomListBox" TargetType="ListBox">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBox">
+                    <Grid Background="Transparent">
+                        <!-- 定義列和行 -->
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+
+                        <!-- 內容區 -->
+                        <ScrollContentPresenter Grid.Column="0" Grid.Row="0" />
+
+                        <!-- 垂直滾動條 -->
+                        <ScrollBar Grid.Column="1"
+                               Grid.Row="0"
+                               Orientation="Vertical"
+                               Name="PART_VerticalScrollBar"
+                               Style="{StaticResource CustomScrollBar}" />
+
+                        <!-- 水平滾動條（如果需要可以啟用） -->
+                        <!--<ScrollBar Grid.Column="0"
+                               Grid.Row="1"
+                               Orientation="Horizontal"
+                               Name="PART_HorizontalScrollBar"
+                               Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"
+                               Style="{StaticResource CustomScrollBar}" />-->
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 </ResourceDictionary>

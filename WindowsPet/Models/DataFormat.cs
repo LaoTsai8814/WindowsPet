@@ -76,6 +76,35 @@ namespace WindowsPet.Models
     [Serializable]
     public class UserDataRequest : Command
     {
+        List<Pet>? _usrpets;
+        public List<Pet>? UserPet
+        {
+            get => _usrpets;
+            set => _usrpets = value;
+        }
+        List<Pet>? _popularpets;
+        public List<Pet>? PopularPet
+        {
+            get => _popularpets;
+            set => _popularpets = value;
+        }
+        private List<Friend> _pendingfriendlist;
+
+        public List<Friend> PendingFriendList
+        {
+            get { return _pendingfriendlist; }
+            set { _pendingfriendlist = value; }
+        }
+
+        private List<Friend> _friendlist;
+
+        public List<Friend> FriendList
+        {
+            get { return _friendlist; }
+            set { _friendlist = value; }
+        }
+
+        public decimal Credit { get; set; }
     }
     [Serializable]
     public class UserDataRespond : Command
@@ -103,6 +132,27 @@ namespace WindowsPet.Models
         public required decimal Price;
 
     }
+
+
+    [Serializable]
+    public class SearchFriendRequest : Command
+    {
+        public string Token;
+        
+        public PersonalData Friend = new();
+    }
+    [Serializable]
+    public class AcceptFriendRequest : Command
+    {
+        public string Token;
+        public required PersonalData Friend = new();
+    }
+    public class DeniedFriendRequest : Command
+    {
+        public string Token;
+        public required PersonalData Friend = new();
+    }
+
     #endregion
 
     #region Database Format
@@ -181,6 +231,8 @@ namespace WindowsPet.Models
         public List<PersonalData> Owner { get; set; } = new();
 
     }
+
+    
 
     #endregion
 

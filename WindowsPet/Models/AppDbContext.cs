@@ -24,6 +24,8 @@ namespace WindowsPet.Models
         /// </summary>
         public DbSet<Pet> Pets { get; set; }
 
+        public DbSet<Friend> Friends { get; set; }
+
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         => options.UseSqlite("Data Source=account.db");
@@ -34,6 +36,23 @@ namespace WindowsPet.Models
                 .HasMany(u => u.UserPets)
                 .WithMany(p => p.Owner)
                 .UsingEntity(j => j.ToTable("UserPets"));
+            modelBuilder.Entity<Friend>()
+        .HasKey(f => new { f.UserId, f.FriendId }); // Composite Key
+
+            modelBuilder.Entity<Friend>()
+                .HasOne(f => f.User)
+                .WithMany(p => p.Friend)
+                .HasForeignKey(f => f.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Friend>()
+                .HasOne(f => f.FriendUser)
+                .WithMany(p => p.FriendOf)
+                .HasForeignKey(f => f.FriendId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Friend>()
+                .ToTable("UserFriend"); // 自訂表名
         }
         public void ConnectToDB()
         {
@@ -43,7 +62,7 @@ namespace WindowsPet.Models
         public void AddUser(PersonalData data)
         {
             // Add a new user to the database
-            
+
             try
             {
                 var user = Users.FirstOrDefault(u => u.Email == data.Email);
@@ -82,7 +101,7 @@ namespace WindowsPet.Models
             try
             {
                 var user = Users.FirstOrDefault(u => u.Email == email);
-                if (user != null && user.Token!=null)
+                if (user != null && user.Token != null)
                 {
                     return user.Token;
                 }
@@ -97,7 +116,24 @@ namespace WindowsPet.Models
                 return string.Empty;
             }
         }
-        public void AddPetListToUser(string token,List<Pet> pets)
+        public void DeletePopularPet()
+        {
+            // Delete a pet from the database
+            try
+            {
+                var pet = Pets.FirstOrDefault(u => u.IsPopular == true);
+                if (pet != null)
+                {
+                    Pets.Remove(pet);
+                    SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+        }
+        public void AddPetListToUser(string token, List<Pet> pets)
         {
             // Add a pet list to the user
             if (pets == null)
@@ -106,7 +142,7 @@ namespace WindowsPet.Models
             }
             try
             {
-                var user = Users.Include(u => u.UserPets).FirstOrDefault(u=>u.Token == token);
+                var user = Users.Include(u => u.UserPets).FirstOrDefault(u => u.Token == token);
                 if (user.UserPets == null)
                     user.UserPets = new List<Pet>();
                 if (user != null)
@@ -116,11 +152,11 @@ namespace WindowsPet.Models
                         var trackedPet = Pets.FirstOrDefault(p => p.Id == pet.Id);
                         if (trackedPet != null)
                         {
-                            if (!user.UserPets.Any(u=>u.Id == trackedPet.Id))
+                            if (!user.UserPets.Any(u => u.Id == trackedPet.Id))
                             {
                                 user.UserPets?.Add(trackedPet);
                             }
-                            
+
                         }
                         else
                         {
@@ -128,11 +164,11 @@ namespace WindowsPet.Models
                             Pets.Add(pet);
                             user.UserPets?.Add(pet);
                         }
-                    }        
+                    }
                 }
                 else
                 {
-                    
+
                 }
                 SaveChanges();
             }
@@ -151,13 +187,13 @@ namespace WindowsPet.Models
                 foreach (var pet in petList)
                 {
                     // 檢查資料庫中是否已存在該寵物
-                   var existingPet = Pets.FirstOrDefault(p => p.Id == pet.Id);
+                    var existingPet = Pets.FirstOrDefault(p => p.Id == pet.Id);
 
                     if (existingPet == null)
                     {
                         Pets.Add(pet); // 加入到資料庫的 DbSet<Pet>
                     }
-                    
+
                 }
 
                 SaveChanges(); // 實際寫入資料庫
@@ -167,8 +203,8 @@ namespace WindowsPet.Models
                 Console.WriteLine($"新增熱門寵物時失敗: {ex.Message}");
             }
         }
-        
-        
+
+
         public bool IsPetPurchased(string token, int petId)
         {
             // Check if the pet is purchased by the user
@@ -191,7 +227,7 @@ namespace WindowsPet.Models
             }
 
         }
-       public bool IsPetPurchased(string? token, string? petname)
+        public bool IsPetPurchased(string? token, string? petname)
         {
             // Check if the pet is purchased by the user
             try
@@ -217,7 +253,7 @@ namespace WindowsPet.Models
         {             // Get the pet from the database
             try
             {
-                var pet = Pets.FirstOrDefault(u=>u.Name == Petname);
+                var pet = Pets.FirstOrDefault(u => u.Name == Petname);
                 if (pet != null)
                 {
                     return pet;
@@ -237,7 +273,7 @@ namespace WindowsPet.Models
         {             // Get the pet from the database
             try
             {
-                var pet = Pets.FirstOrDefault(u =>u.Name == Petname&&u.IsPopular==true);
+                var pet = Pets.FirstOrDefault(u => u.Name == Petname && u.IsPopular == true);
                 if (pet != null)
                 {
                     return pet;
@@ -274,7 +310,7 @@ namespace WindowsPet.Models
             }
         }
 
-        internal void VerifyPetPrice(int petId,decimal price)
+        internal void VerifyPetPrice(int petId, decimal price)
         {
             Pet? pet = Pets.FirstOrDefault(p => p.Id == petId);
             if (pet == null)
@@ -306,7 +342,7 @@ namespace WindowsPet.Models
                 ViewModelManager.Instance.GetViewModel<HomeTabVM>(TabManager.Instance.GetTabObject<HomeTab>())
                     .MyFavoritePets.Add(new UIPets(pet.Name, pet.ImagePath));
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine(ex);
             }
@@ -349,6 +385,41 @@ namespace WindowsPet.Models
             {
                 return true;
             }
+        }
+
+        internal void AddPendingFriendToUser(List<Friend> PendingFriendRequest)
+        {
+            var user = Users.Include(u => u.PendingFriendRequest).FirstOrDefault(u => u.Token == CurrentUser.Token);
+            if (user == null)
+                return;
+
+            foreach (var pendingrequest in PendingFriendRequest)
+            {
+                if (user.Token != pendingrequest.UserId)
+                {
+                    user.PendingFriendRequest.Add(pendingrequest);
+                }
+            }
+            //throw new NotImplementedException();
+        }
+
+        internal void AddFriendToUser(List<Friend> friendList)
+        {
+            var user = Users.Include(u => u.Friend).FirstOrDefault(u => u.Token == CurrentUser.Token);
+            if (user == null)
+                return;
+
+            foreach (var friend in friendList)
+            {
+                if (user.Token != friend.UserId)
+                {
+                    user.PendingFriendRequest.Add(friend);
+                }
+            }
+            //throw new NotImplementedException();
+
+
+            //throw new NotImplementedException();
         }
     }
 }

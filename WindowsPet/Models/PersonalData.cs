@@ -10,7 +10,6 @@ namespace WindowsPet.Models
     public class PersonalData
     {
 		
-        public int Id { get; set; }
 
         #region UserName
         private string? _name;
@@ -42,7 +41,7 @@ namespace WindowsPet.Models
 		#endregion
 		#region
 		private string? _token;
-
+		[Key]
 		public string? Token
 		{
 			get { return _token; }
@@ -61,6 +60,30 @@ namespace WindowsPet.Models
 
 		public List<Pet>? UserPets=new();
 
+        // 我加了哪些人好友
+        public ICollection<Friend> Friend { get; set; } = new List<Friend>();
+
+        public ICollection<Friend> FriendOf { get; set; } = new List<Friend>();
+
+        public ICollection<Friend> PendingFriendRequest { get; set; } = new List<Friend>();
+
+
+    }
+    public class Friend
+    {
+        // 關係表
+        public string UserId { get; set; }              // 自己
+        public PersonalData User { get; set; } = null!;
+
+        public string FriendId { get; set; }            // 好友
+        public PersonalData FriendUser { get; set; } = null!;
+
+        public Guid? Token { get; set; }             // 好友的 Token（快取用）
+        public string Name { get; set; } = "";       // 好友名字（快取）
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        // 非必要，如果你確實要快取寵物清單：
+        public ICollection<Pet>? FriendOwningPets { get; set; }
     }
     public static class CurrentUser
     {
@@ -82,4 +105,5 @@ namespace WindowsPet.Models
 
 		#endregion
 	}
+	
 }
