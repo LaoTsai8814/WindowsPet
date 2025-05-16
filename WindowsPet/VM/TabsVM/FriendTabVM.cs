@@ -26,7 +26,7 @@ namespace WindowsPet.VM.TabsVM
 
         public ICommand AddFriendCommand { get; set; }
 
-        public ObservableCollection<Friend> PendingFriendRequest { get; set; } = new();
+        public ObservableCollection<FriendRequest> PendingFriendRequest { get; set; } = new();
 
         public ObservableCollection<Friend> Friends { get; set; } = new();
 
@@ -34,7 +34,8 @@ namespace WindowsPet.VM.TabsVM
         public FriendTabVM()
         {
             AddFriendCommand = new RelayCommands(OnAddFriend);
-            
+            PendingFriendRequest = new ObservableCollection <FriendRequest> (AppDbContext.Instance.GetPendingFriendRequest());
+            Friends = new ObservableCollection<Friend>(AppDbContext.Instance.GetUserFriends());
 
         }
 
@@ -50,10 +51,6 @@ namespace WindowsPet.VM.TabsVM
                 Token = SearchText,
                 UserToken = CurrentUser.Token
             });
-
-
-
-
             //throw new NotImplementedException();
         }
 

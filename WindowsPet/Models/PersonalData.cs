@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace WindowsPet.Models
 {
@@ -65,8 +66,7 @@ namespace WindowsPet.Models
 
         public ICollection<Friend> FriendOf { get; set; } = new List<Friend>();
 
-        public ICollection<Friend> PendingFriendRequest { get; set; } = new List<Friend>();
-
+        public ICollection<FriendRequest> ReceivedFriendRequests { get; set; } = new List<FriendRequest>();
 
     }
     public class Friend
@@ -84,6 +84,34 @@ namespace WindowsPet.Models
 
         // 非必要，如果你確實要快取寵物清單：
         public ICollection<Pet>? FriendOwningPets { get; set; }
+    }
+    public enum FriendRequestStatus
+    {
+        Pending,
+        Accepted,
+        Rejected
+    }
+    public class FriendRequest
+    {
+
+        public int Id { get; set; }
+
+        // 送出者
+        public string FromUserId { get; set; }
+        // 接收者
+        public string ToUserId { get; set; }
+
+        public string FromUserName { get; set; }
+
+        // 狀態：Pending / Accepted / Rejected
+        public FriendRequestStatus Status { get; set; }
+
+        public DateTime RequestTime { get; set; } = DateTime.Now; 
+
+        [JsonIgnore]
+        public ICollection<PersonalData> RequestUser = new List<PersonalData>();
+
+
     }
     public static class CurrentUser
     {

@@ -26,6 +26,8 @@ namespace WindowsPet.Models
 
         public DbSet<Friend> Friends { get; set; }
 
+        public DbSet<FriendRequest> FriendRequests {get;set;}
+
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         => options.UseSqlite("Data Source=account.db");
@@ -53,6 +55,14 @@ namespace WindowsPet.Models
 
             modelBuilder.Entity<Friend>()
                 .ToTable("UserFriend"); // 自訂表名
+
+            modelBuilder.Entity<PersonalData>()
+                .HasMany(u => u.ReceivedFriendRequests)
+                .WithMany(f =>f.RequestUser)
+                .UsingEntity(j => j.ToTable("FriendRequestsTable"));
+
+
+
         }
         public void ConnectToDB()
         {
@@ -387,19 +397,31 @@ namespace WindowsPet.Models
             }
         }
 
-        internal void AddPendingFriendToUser(List<Friend> PendingFriendRequest)
+        internal void AddPendingFriendToUser(List<FriendRequest> PendingFriendRequest)
         {
-            var user = Users.Include(u => u.PendingFriendRequest).FirstOrDefault(u => u.Token == CurrentUser.Token);
-            if (user == null)
-                return;
-
-            foreach (var pendingrequest in PendingFriendRequest)
+            try
             {
-                if (user.Token != pendingrequest.UserId)
+                var user = Users.Include(u => u.ReceivedFriendRequests).FirstOrDefault(u => u.Token == CurrentUser.Token);
+                if (user == null)
+                    return;
+
+                foreach (var pendingrequest in PendingFriendRequest)
                 {
-                    user.PendingFriendRequest.Add(pendingrequest);
+                    FriendRequests.Add(pendingrequest);
+                    if (user.Token != pendingrequest.FromUserId)
+                    {
+                        user.ReceivedFriendRequests.Add(pendingrequest);
+                    }
+                    SaveChanges();
                 }
+                
             }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException)
+            {
+
+            }
+            
+            
             //throw new NotImplementedException();
         }
 
@@ -413,13 +435,35 @@ namespace WindowsPet.Models
             {
                 if (user.Token != friend.UserId)
                 {
-                    user.PendingFriendRequest.Add(friend);
+                    user.Friend.Add(friend);
                 }
             }
+            SaveChanges();
             //throw new NotImplementedException();
 
 
             //throw new NotImplementedException();
+        }
+
+        internal List<FriendRequest> GetPendingFriendRequest()
+        {
+            var user = Users.Include(u => u.ReceivedFriendRequests).FirstOrDefault(u => u.Token == CurrentUser.Token);
+            if (user == null)
+                return new List<FriendRequest>();
+            else
+            {
+                return user.ReceivedFriendRequests.ToList();
+            }
+        }
+        internal List<Friend> GetUserFriends()
+        {
+            var user = Users.Include(u => u.Friend).FirstOrDefault(u => u.Token == CurrentUser.Token);
+            if (user == null)
+                return new List<Friend>();
+            else
+            {
+                return user.Friend.ToList();
+            }
         }
     }
 }

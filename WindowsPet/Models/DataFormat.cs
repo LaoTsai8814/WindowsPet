@@ -88,9 +88,9 @@ namespace WindowsPet.Models
             get => _popularpets;
             set => _popularpets = value;
         }
-        private List<Friend> _pendingfriendlist;
+        private List<FriendRequest> _pendingfriendlist;
 
-        public List<Friend> PendingFriendList
+        public List<FriendRequest> PendingFriendList
         {
             get { return _pendingfriendlist; }
             set { _pendingfriendlist = value; }
