@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using Newtonsoft.Json;
 
 namespace WindowsPet.Models
@@ -111,6 +112,7 @@ namespace WindowsPet.Models
         [JsonIgnore]
         public ICollection<PersonalData> RequestUser = new List<PersonalData>();
 
+        
 
     }
     public static class CurrentUser

@@ -57,7 +57,7 @@ namespace WindowsPet.Views.Ucontrol
 
 
 
-        public string CommandParameter
+        public object CommandParameter
         {
             get { return (string)GetValue(CommandParameterProperty); }
             set { SetValue(CommandParameterProperty, value); }
@@ -65,7 +65,7 @@ namespace WindowsPet.Views.Ucontrol
 
         // Using a DependencyProperty as the backing store for CommandParameter.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty CommandParameterProperty =
-            DependencyProperty.Register("CommandParameter", typeof(string), typeof(SideButton), new PropertyMetadata("MainTab"));
+            DependencyProperty.Register("CommandParameter", typeof(object), typeof(SideButton), new PropertyMetadata("MainTab"));
     }
 
 

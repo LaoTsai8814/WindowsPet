@@ -144,13 +144,13 @@ namespace WindowsPet.Models
     [Serializable]
     public class AcceptFriendRequest : Command
     {
-        public string Token;
-        public required PersonalData Friend = new();
+        public required string Token;
+        public  PersonalData Friend = new();
     }
     public class DeniedFriendRequest : Command
     {
-        public string Token;
-        public required PersonalData Friend = new();
+        public required string Token;
+        public  PersonalData Friend = new();
     }
 
     #endregion

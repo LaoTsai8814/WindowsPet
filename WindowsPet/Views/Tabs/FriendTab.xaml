@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:WindowsPet.Views.Tabs"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              xmlns:uc="clr-namespace:WindowsPet.Views.Ucontrol"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes" xmlns:tabsvm="clr-namespace:WindowsPet.VM.TabsVM" d:DataContext="{d:DesignInstance Type=tabsvm:FriendTabVM}"
              mc:Ignorable="d" 
              >
     <Grid>
@@ -43,13 +43,34 @@ Command="{Binding AddFriendCommand}"
 
             <Grid Grid.Column="0">
                 <ListBox 
-    Style="{StaticResource CustomListBox}"
+                    Style="{StaticResource CustomListBox}"
+                     ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
     ItemsSource="{Binding PendingFriendRequest}"
 
    >
                     <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Name}" />
+                        <DataTemplate >
+                            <Grid  >
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="auto"></ColumnDefinition>
+                                    <ColumnDefinition Width="*"></ColumnDefinition>
+                                    <ColumnDefinition Width="auto"></ColumnDefinition>
+
+                                </Grid.ColumnDefinitions>
+                                <Grid Grid.Column="0">
+                                    <uc:SideButton Icon="Check" HorizontalAlignment="Left"  Command="{Binding DataContext.AcceptCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding }"></uc:SideButton>
+
+                                </Grid>
+                                <Grid Grid.Column="1">
+                                    <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#edeeee" Text="{Binding FromUserName}" FontSize="20"/>
+
+                                </Grid>
+                                <Grid Grid.Column="2">
+                                    <uc:SideButton Icon="Close" HorizontalAlignment="Right"  Command="{Binding DataContext.RejectCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding }"></uc:SideButton>
+
+                                </Grid>
+                            </Grid>
+                           
                         </DataTemplate>
                     </ListBox.ItemTemplate>
 

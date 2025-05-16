@@ -407,6 +407,9 @@ namespace WindowsPet.Models
 
                 foreach (var pendingrequest in PendingFriendRequest)
                 {
+                    if(FriendRequests.Any(u=>u.Id
+                    == pendingrequest.Id))
+                        continue;
                     FriendRequests.Add(pendingrequest);
                     if (user.Token != pendingrequest.FromUserId)
                     {
@@ -464,6 +467,24 @@ namespace WindowsPet.Models
             {
                 return user.Friend.ToList();
             }
+        }
+
+        internal void RemovePendingFriendRequest(string fromUserId)
+        {
+            try
+            {
+                var friend =  FriendRequests.FirstOrDefault(u => u.FromUserId == fromUserId);
+                if (friend != null)
+                {
+                    FriendRequests.Remove(friend);
+                    SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+            //throw new NotImplementedException();
         }
     }
 }

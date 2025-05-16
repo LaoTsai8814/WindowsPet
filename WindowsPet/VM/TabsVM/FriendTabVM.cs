@@ -25,18 +25,58 @@ namespace WindowsPet.VM.TabsVM
         }
 
         public ICommand AddFriendCommand { get; set; }
+        public ICommand AcceptCommand { get; set; }
+        public ICommand RejectCommand { get; set; }
 
-        public ObservableCollection<FriendRequest> PendingFriendRequest { get; set; } = new();
-
-        public ObservableCollection<Friend> Friends { get; set; } = new();
+        private ObservableCollection<FriendRequest> _pendingFriendRequest;
+        public ObservableCollection<FriendRequest> PendingFriendRequest
+        {
+            get => _pendingFriendRequest;
+            set
+            {
+                _pendingFriendRequest = value;
+                OnPropertyChanged();
+            }
+        }
+        private ObservableCollection<Friend> _friends;
+        public ObservableCollection<Friend> Friends
+        {
+            get => _friends;
+            set
+            {
+                _friends = value;
+                OnPropertyChanged();
+            }
+        }
 
 
         public FriendTabVM()
         {
             AddFriendCommand = new RelayCommands(OnAddFriend);
             PendingFriendRequest = new ObservableCollection <FriendRequest> (AppDbContext.Instance.GetPendingFriendRequest());
+            
             Friends = new ObservableCollection<Friend>(AppDbContext.Instance.GetUserFriends());
+            AcceptCommand = new RelayCommands(OnAccept);
+            RejectCommand = new RelayCommands(OnReject);
+        }
 
+        private void OnReject(object? obj)
+        {
+            AppDbContext.Instance.RemovePendingFriendRequest((obj as FriendRequest).FromUserId);
+            PendingFriendRequest.Remove(obj as FriendRequest);
+
+            //throw new NotImplementedException();
+        }
+
+        private async void OnAccept(object? obj)
+        {
+            FriendRequest? friendRequest = obj as FriendRequest;
+            await JsonSerialize.SerializeAndSendJson(new AcceptFriendRequest
+            {
+                Token = friendRequest.FromUserId,
+                UserToken = CurrentUser.Token
+            });
+            //throw new NotImplementedException();
         }
 
         private async void OnAddFriend(object? obj)
