@@ -65,7 +65,7 @@ namespace WindowsPet.Models
 
             try
             {
-                var user = Users.FirstOrDefault(u => u.Email == data.Email);
+                var user = Users.FirstOrDefault(u => u.Email == data.Email && u.Token == data.Token);
                 if (user != null)
                 {
                     // User already exists, handle accordingly
