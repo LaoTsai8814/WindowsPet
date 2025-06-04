@@ -19,7 +19,6 @@ namespace WindowsPet.Models
         }
         public void StartHandler()
         {
-            NetworkManager.Instance.OnError += PrintErrorConsole;
         }
         private void PrintErrorConsole(string s)
         {

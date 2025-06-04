@@ -1,216 +1,108 @@
-﻿using Renci.SshNet;
-using System;
-using System.Collections.Concurrent;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
+using System.IO.Compression;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Media;
-using static System.Net.WebRequestMethods;
+using Newtonsoft.Json.Linq;
+using WindowsPet.Models.Repository;
+using WindowsPet.Models.ServiceInterface;
 
 namespace WindowsPet.Models
 {
-    internal class FileManager
+    public class FileManager
     {
-        private static FileManager? _instance;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly IPetService _petService;
 
-        private CancellationToken UserPetCancelToken;
-        private CancellationToken PopularPetCancelToken;
-
-        public event Action<string,string>? OnPopluarPetDownloadComplete;
-        public event Action<string,string>? OnUserPetDownloadComplete;
-
-        public ConcurrentDictionary<string, List<string>> PopularPetFileLocationDict = new();
-        public ConcurrentDictionary<string, List<string>> UserPetFileLocationDict = new();
-
-        public static FileManager Instance => _instance ??= new();
-        
-        
-        readonly SftpClient sftp = new SftpClient(FTPSetting.host, FTPSetting.port, FTPSetting.username, FTPSetting.password);
-
-        
-        public void OpenFileManager()
+        public FileManager(IServiceProvider serviceProvider, IPetService petService)
         {
-
+            _serviceProvider = serviceProvider;
+            _petService = petService;
         }
+        private readonly HttpClient _http = new();
 
-
-        /// <summary>
-        /// Download the pet data from the server
-        /// and it will download the folder and all the files in it
-        /// </summary>
-        /// <param FileFolderName="name"></param>
-        public async Task DownloadPoplarPet()
+        //GetUserPetList
+        public async Task<List<string>> GetUserFilesAsync(string token)
         {
-            await sftp.ConnectAsync(PopularPetCancelToken);
-            IEnumerable<Renci.SshNet.Sftp.ISftpFile> Folder
-                = sftp.ListDirectory(@"/PopularPet");
+            using var httpClient = new HttpClient();
 
-            foreach (var folder in Folder)
+            string url = $"http://{RestApiSetting.IpAddress}:{RestApiSetting.Port}/api/file/list?user={token}";
+            var files = await httpClient.GetFromJsonAsync<List<string>>(url);
+
+            return files ?? new List<string>();
+        }
+        //Download  User Pets
+        public async Task DownloadFileAsync(string userId, string url, string savePath,string filename)
+        {
+            using var httpClient = new HttpClient();
+
+            var response = await httpClient.GetAsync(url);
+
+            response.EnsureSuccessStatusCode();
+
+            byte[] data = await response.Content.ReadAsByteArrayAsync();
+
+            if (!Directory.Exists(savePath))
+                Directory.CreateDirectory(savePath);
+
+            if (data == null)
             {
-                if (!folder.IsDirectory)
-                {
-                    continue;
-                }
-                IEnumerable<Renci.SshNet.Sftp.ISftpFile> PetFolder = sftp.ListDirectory(@$"/PopularPet/{folder.Name}");
-                if (folder.Name != "." && folder.Name != "..")
-                {
-                    PopularPetFileLocationDict.TryAdd(folder.Name, new List<string>());
-
-                    if (!Directory.Exists(Path.Combine(FileLocation.PopularPet, folder.Name)))
-                    {
-                        Directory.CreateDirectory(Path.Combine(FileLocation.PopularPet, folder.Name));
-                        Console.WriteLine("資料夾已建立：" + @$"/PopularPet/{folder.Name}");
-                    }
-                    foreach (var file in PetFolder)
-                    {
-                        // 忽略"." 和 ".."
-                        if (file.Name != "." && file.Name != "..")
-                        {
-                            try
-                            {
-                                using (var fileStream = System.IO.File.Create(Path.Combine(FileLocation.PopularPet, folder.Name, file.Name)))
-                                {
-                                    sftp.DownloadFile(@$"{file.FullName}", fileStream);
-                                    PopularPetFileLocationDict[folder.Name].Add(Path.Combine(FileLocation.PopularPet, folder.Name, file.Name));
-
-                                    if (file.FullName.EndsWith(".png"))
-                                    {
-                                        OnPopluarPetDownloadComplete?.Invoke(folder.Name, Path.Combine(FileLocation.PopularPet, folder.Name, file.Name));
-                                    }
-                                }
-
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.WriteLine("Error: " + ex.Message);
-                                Console.WriteLine("Current remote directory: " + sftp.WorkingDirectory);
-                                Console.WriteLine("Error: " + ex.Message);
-                                sftp.Disconnect();
-
-                            }
-                        }
-                    }
-                }
+                Console.WriteLine("data 為 null，無法寫入");
+                return;
             }
-            
-            // 遍历并打印文件名
 
-            sftp.Disconnect();
-
-
-        }
-
-
-
-        /// <summary>
-        /// UserPetList Should be a Directory
-        /// </summary>
-        /// <param name="UserPetList"></param>
-        public async Task DownloadUserPet(List<Pet> UserPetList)
-        {
-            
-            await sftp.ConnectAsync(UserPetCancelToken);
-            IEnumerable<Renci.SshNet.Sftp.ISftpFile> Folder
-                = sftp.ListDirectory(@"/AllPet");
-
-            // 下載使用者的寵物資料
-            foreach (var pet in UserPetList)
-            {
-                if(RemoteDirectoryExists(sftp, $@"/AllPet/{pet.Name}"))
-                {
-                    IEnumerable<Renci.SshNet.Sftp.ISftpFile> PetFolder
-                = sftp.ListDirectory($@"/AllPet/{pet.Name}");
-                    UserPetFileLocationDict.TryAdd(pet.Name, new());
-
-                    if (!Directory.Exists(Path.Combine(FileLocation.UserPet, pet.Name)))
-                    {
-
-                        Directory.CreateDirectory(Path.Combine(FileLocation.UserPet, pet.Name));
-                        Console.WriteLine("資料夾已建立：" + @$"{pet.Name}");
-                    }
-                    foreach (var file in PetFolder)
-                    {
-                        // 忽略"." 和 ".."
-                        if (file.Name == "." || file.Name == "..")
-                        {
-                            continue;
-                        }
-                        try
-                        {
-                            using (var fileStream = System.IO.File.Create(Path.Combine(FileLocation.UserPet, pet.Name,file.Name)))
-                            {
-                                sftp.DownloadFile(@$"{file.FullName}", fileStream);
-                                UserPetFileLocationDict[pet.Name].Add(Path.Combine(FileLocation.UserPet, pet.Name, file.Name));
-                                if(file.FullName.EndsWith(".png"))
-                                {
-                                     OnUserPetDownloadComplete?.Invoke(pet.Name, Path.Combine(FileLocation.UserPet, pet.Name, file.Name));
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine("Error: " + ex.Message);
-                            
-                            Console.WriteLine("Current remote directory: " + sftp.WorkingDirectory);
-                            Console.WriteLine("Error: " + ex.Message);
-                        }
-                    }
-                }
-                    
-            }
-            
-            sftp.Disconnect();
-        }
-
-
-
-
-        /// <summary>
-        /// Check if the remote directory exists
-        /// </summary>
-        /// <param name="sftp"></param>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        public bool RemoteDirectoryExists(SftpClient sftp, string path)
-        {
             try
             {
-                if (sftp.Exists(path))
-                {
-                    var attr = sftp.GetAttributes(path);
-                    return attr.IsDirectory;
-                }
-                return false;
+                await File.WriteAllBytesAsync(Path.Combine(LocalStorageSetting.UserOwnPetLocation,filename), data);
+                
+                ZipFile.ExtractToDirectory(Path.Combine(LocalStorageSetting.UserOwnPetLocation, filename), Path.Combine(LocalStorageSetting.UserOwnPetLocation), overwriteFiles: true);
+
+                File.Delete(Path.Combine(LocalStorageSetting.UserOwnPetLocation, filename));
+
+                Console.WriteLine($"檔案已下載並解壓縮到 {LocalStorageSetting.UserOwnPetLocation}");              
+
+                Console.WriteLine("非同步寫入成功");
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Console.WriteLine("權限不足: " + ex.Message);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error checking directory: {ex.Message}");
-                return false;
+                Console.WriteLine("其他錯誤: " + ex.Message);
+            }
+
+        }
+        //Download All User Pets
+        public async Task DownloadAllUserPets(string userId)
+        {
+            var remotepetlist = await GetUserFilesAsync(userId);
+
+            if (!Directory.Exists(LocalStorageSetting.UserOwnPetLocation))
+            {
+                Directory.CreateDirectory(LocalStorageSetting.UserOwnPetLocation);
+            }
+            foreach (var petdir in remotepetlist)
+            {
+                string url = $"http://{RestApiSetting.IpAddress}:{RestApiSetting.Port}/api/file/download?user={userId}&name={Uri.EscapeDataString(petdir)}";
+                Console.WriteLine($"Downloading {petdir}");
+                await DownloadFileAsync(userId, url, LocalStorageSetting.UserOwnPetLocation,petdir);
             }
         }
-
-
-        public void OnExit()
-        {
-
-        }
-        /// <summary>
-        /// Base File Location
-        /// </summary>
-        static class FileLocation
-        {
-            public static readonly string PopularPet = Path.Combine(Path.GetTempPath(), "PopularPet");
-            public static readonly string UserPet = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DesktopPet", "MyPet");
-        }
-        static class FTPSetting
-        {
-            public static string host = "192.168.0.104";
-            public static int port = 22; // Default SSH port
-            public static string username = "iantsai05";
-            public static string password = "Biglattes@61834";
-        }
     }
+
+    internal static class RestApiSetting
+    {
+        public readonly static string IpAddress = "192.168.0.104";
+        public readonly static int Port = 5225;
+    }
+    internal static class LocalStorageSetting
+    {
+        public static string UserOwnPetLocation = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "UserPet");
+        public static string LocalCache = Path.Combine(Path.GetTempPath(), "PetCache");
+    }
+
 }

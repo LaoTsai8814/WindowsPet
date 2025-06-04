@@ -11,7 +11,7 @@ using WindowsPet.Views.Tabs;
 
 namespace WindowsPet.Models
 {
-    internal class AppDbContext : DbContext
+    public class AppDbContext : DbContext
     {
         private static AppDbContext? _appdbcontext;
 
@@ -23,6 +23,8 @@ namespace WindowsPet.Models
         /// The pets that the user has purchased.
         /// </summary>
         public DbSet<Pet> Pets { get; set; }
+
+        public DbSet<Pet> PopularPets { get; set; }
 
         public DbSet<Friend> Friends { get; set; }
 
@@ -69,6 +71,7 @@ namespace WindowsPet.Models
             // Create the database if it doesn't exist          
             Instance.Database.EnsureCreated();
         }
+        /*
         public void AddUser(PersonalData data)
         {
             // Add a new user to the database
@@ -92,57 +95,13 @@ namespace WindowsPet.Models
             }
 
         }
-        public void SaveChangesToDB()
-        {
-            // Save changes to the database
-            try
-            {
-                Instance.SaveChanges();
+        */
 
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-            }
-        }
-        public string GetUserToken(string email)
-        {
-            // Get the user token from the database
-            try
-            {
-                var user = Users.FirstOrDefault(u => u.Email == email);
-                if (user != null && user.Token != null)
-                {
-                    return user.Token;
-                }
-                else
-                {
-                    return string.Empty;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                return string.Empty;
-            }
-        }
-        public void DeletePopularPet()
-        {
-            // Delete a pet from the database
-            try
-            {
-                var pet = Pets.FirstOrDefault(u => u.IsPopular == true);
-                if (pet != null)
-                {
-                    Pets.Remove(pet);
-                    SaveChanges();
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-            }
-        }
+        /*Update To Use The Depency Injection
+         * This method is deprecated and will be removed in the future.
+         * 
+         * 
+        [Obsolete]
         public void AddPetListToUser(string token, List<Pet> pets)
         {
             // Add a pet list to the user
@@ -186,8 +145,8 @@ namespace WindowsPet.Models
             {
                 Console.WriteLine(ex);
             }
-        }
-
+        }*/
+        /*Update To Use The Depency Injection
         public void AddPopularPetToTable(List<Pet>? petList)
         {
             if (petList == null || petList.Count == 0) return;
@@ -213,31 +172,9 @@ namespace WindowsPet.Models
                 Console.WriteLine($"新增熱門寵物時失敗: {ex.Message}");
             }
         }
-
-
-        public bool IsPetPurchased(string token, int petId)
-        {
-            // Check if the pet is purchased by the user
-            try
-            {
-                var user = Users.FirstOrDefault(u => u.Token == token);
-                if (user != null)
-                {
-                    return user.UserPets?.Any(p => p.Id == petId) ?? false;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                return false;
-            }
-
-        }
-        public bool IsPetPurchased(string? token, string? petname)
+        */
+        /* Update To Use The Depency Injection
+        public bool IsPetPurchased(Guid? token, string? petname)
         {
             // Check if the pet is purchased by the user
             try
@@ -257,8 +194,8 @@ namespace WindowsPet.Models
                 Console.WriteLine(ex);
                 return false;
             }
-        }
-
+        }*/
+        /*Update To Use The Depency Injection
         public Pet GetPet(string? Petname)
         {             // Get the pet from the database
             try
@@ -279,7 +216,10 @@ namespace WindowsPet.Models
                 return null!;
             }
         }
-        public Pet? GetPopularPet(string? Petname)
+        public
+        */
+        /*Update To Use The Depency Injection
+        Pet? GetPopularPet(string? Petname)
         {             // Get the pet from the database
             try
             {
@@ -299,28 +239,9 @@ namespace WindowsPet.Models
                 return null;
             }
         }
-        public Pet? GetPopularPet(int PetId)
-        {             // Get the pet from the database
-            try
-            {
-                var pet = Pets.FirstOrDefault(u => u.Id == PetId && u.IsPopular == true);
-                if (pet != null)
-                {
-                    return pet;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                return null;
-            }
-        }
-
-        internal void VerifyPetPrice(int petId, decimal price)
+        */
+        /*Update To Use The Depency Injection
+        internal void VerifyPetPrice(Guid petId, decimal price)
         {
             Pet? pet = Pets.FirstOrDefault(p => p.Id == petId);
             if (pet == null)
@@ -332,9 +253,9 @@ namespace WindowsPet.Models
             SaveChanges();
 
             //throw new NotImplementedException();
-        }
-
-        internal void AddPetToUser(string? token, int petId)
+        }*/
+        /*Update To Use The Depency Injection
+        internal void AddPetToUser(Guid? token, Guid petId)
         {
             try
             {
@@ -356,11 +277,10 @@ namespace WindowsPet.Models
             {
                 Console.WriteLine(ex);
             }
-
-            //throw new NotImplementedException();
         }
-
-        internal void UpdateUserCredit(string? token, decimal credit)
+        */
+        /*Update To Use The Depency Injection
+        internal void UpdateUserCredit(Guid? token, decimal credit)
         {
             var user = Users.FirstOrDefault(u => u.Token == token);
 
@@ -371,10 +291,11 @@ namespace WindowsPet.Models
             SaveChanges();
 
             //throw new NotImplementedException();
-        }
-        public bool IsPetOwnByUser(int id)
+        }*/
+        /*Update To Use The Depency Injection
+        public bool IsPetOwnByUser(Guid id)
         {
-            var pet = Users.Include(u => u.UserPets).FirstOrDefault(u => u.Token == CurrentUser.Token)!.UserPets?.FirstOrDefault(p => p.Id == id);
+            var pet = Users.Include(u => u.UserPets).FirstOrDefault(u => u.Token == CurrentUser.Token).UserPets?.FirstOrDefault(p => p.Id == id);
             if (pet == null)
             {
                 return false;
@@ -384,6 +305,8 @@ namespace WindowsPet.Models
                 return true;
             }
         }
+        */
+        /*Update To Use The Depency Injection
         public bool IsPetOwnByUser(string? name)
         {
             var pet = Users.Include(u => u.UserPets).FirstOrDefault(u => u.Token == CurrentUser.Token)!.UserPets?.FirstOrDefault(p => p.Name == name);
@@ -396,6 +319,7 @@ namespace WindowsPet.Models
                 return true;
             }
         }
+        */
 
         internal void AddPendingFriendToUser(List<FriendRequest> PendingFriendRequest)
         {
@@ -442,10 +366,7 @@ namespace WindowsPet.Models
                 }
             }
             SaveChanges();
-            //throw new NotImplementedException();
 
-
-            //throw new NotImplementedException();
         }
 
         internal List<FriendRequest> GetPendingFriendRequest()
@@ -469,7 +390,7 @@ namespace WindowsPet.Models
             }
         }
 
-        internal void RemovePendingFriendRequest(string fromUserId)
+        internal void RemovePendingFriendRequest(Guid fromUserId)
         {
             try
             {
@@ -485,6 +406,25 @@ namespace WindowsPet.Models
                 Console.WriteLine(ex);
             }
             //throw new NotImplementedException();
+        }
+
+        internal void AddFriendToTable(Friend friend)
+        {
+            try
+            {
+                var f = Users.Include(u => u.Friend).FirstOrDefault(u => u.Token == CurrentUser.Token);
+                if(!f.Friend.Any(u=> u.Token == friend.Token))
+                {
+                    f.Friend.Add(friend);
+                    SaveChanges();
+
+                }
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+            
         }
     }
 }

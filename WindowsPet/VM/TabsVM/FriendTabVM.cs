@@ -60,38 +60,20 @@ namespace WindowsPet.VM.TabsVM
             RejectCommand = new RelayCommands(OnReject);
         }
 
-        private void OnReject(object? obj)
+        private async void OnReject(object? obj)
         {
-            AppDbContext.Instance.RemovePendingFriendRequest((obj as FriendRequest).FromUserId);
-            PendingFriendRequest.Remove(obj as FriendRequest);
-
-            //throw new NotImplementedException();
+            
+            
         }
 
         private async void OnAccept(object? obj)
         {
-            FriendRequest? friendRequest = obj as FriendRequest;
-            await JsonSerialize.SerializeAndSendJson(new AcceptFriendRequest
-            {
-                Token = friendRequest.FromUserId,
-                UserToken = CurrentUser.Token
-            });
-            //throw new NotImplementedException();
+            
         }
 
         private async void OnAddFriend(object? obj)
         {
-            if(String.IsNullOrEmpty(SearchText))
-            {
-                // Show error message
-                return;
-            }
-            await JsonSerialize.SerializeAndSendJson(new SearchFriendRequest
-            {
-                Token = SearchText,
-                UserToken = CurrentUser.Token
-            });
-            //throw new NotImplementedException();
+            
         }
 
         protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)

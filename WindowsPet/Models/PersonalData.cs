@@ -31,8 +31,7 @@ namespace WindowsPet.Models
 			set { _email = value; }
 		}
         #endregion
-        
-		#region
+		#region Password
 		private string? _userpasswd;
 
 		public string? UserPassword
@@ -41,10 +40,10 @@ namespace WindowsPet.Models
 			set { _userpasswd = value; }
 		}
 		#endregion
-		#region
-		private string? _token;
+		#region Token
+		private Guid? _token;
 		[Key]
-		public string? Token
+		public Guid? Token
 		{
 			get { return _token; }
 			set { _token = value; }
@@ -61,22 +60,18 @@ namespace WindowsPet.Models
 		#endregion
 
 		public List<Pet>? UserPets=new();
-
         // 我加了哪些人好友
         public ICollection<Friend> Friend { get; set; } = new List<Friend>();
-
         public ICollection<Friend> FriendOf { get; set; } = new List<Friend>();
-
         public ICollection<FriendRequest> ReceivedFriendRequests { get; set; } = new List<FriendRequest>();
-
     }
     public class Friend
     {
         // 關係表
-        public string UserId { get; set; }              // 自己
+        public Guid UserId { get; set; }              // 自己
         public PersonalData User { get; set; } = null!;
 
-        public string FriendId { get; set; }            // 好友
+        public Guid FriendId { get; set; }            // 好友
         public PersonalData FriendUser { get; set; } = null!;
 
         public Guid? Token { get; set; }             // 好友的 Token（快取用）
@@ -98,9 +93,9 @@ namespace WindowsPet.Models
         public int Id { get; set; }
 
         // 送出者
-        public string FromUserId { get; set; }
+        public Guid FromUserId { get; set; }
         // 接收者
-        public string ToUserId { get; set; }
+        public Guid ToUserId { get; set; }
 
         public string FromUserName { get; set; }
 
@@ -118,9 +113,9 @@ namespace WindowsPet.Models
     public static class CurrentUser
     {
         #region
-        private static string? _token;
+        private static Guid? _token;
 
-        public static string? Token
+        public static Guid? Token
         {
             get { return _token; }
             set { _token = value; }

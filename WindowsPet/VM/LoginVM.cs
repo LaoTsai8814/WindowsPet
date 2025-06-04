@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Microsoft.Extensions.DependencyInjection;
 using WindowsPet.Command;
 using WindowsPet.Models;
 using WindowsPet.Views;
@@ -17,6 +18,7 @@ namespace WindowsPet.VM
     internal class LoginVM: INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler? PropertyChanged;
+
         public Action ChangeTab;
         #region Normal Login Username and Password
         private string? _username;
@@ -56,16 +58,17 @@ namespace WindowsPet.VM
         public ICommand MinimizeCommand { get; set; }
 
         public ICommand CloseCommand { get; set; }
-        private async void OnLoginButtonClicked(object obj) 
+        private async void OnLoginButtonClicked(object? obj) 
         {
             if (Username!=null&&Password!=null)
             {
                 LoginCommand cmd = new LoginCommand
                 {
                     Name = "",
-                    UserToken = "",
+                    UserToken = Guid.Empty,
                     Password = Password,
                     Email = "",
+                    accounttype = AccountType.Normal
                 };
                 if(!VerifyInput.IsValidEmailFormat(Username))
                 {
@@ -85,7 +88,7 @@ namespace WindowsPet.VM
         #endregion
         #region Register Command
         public ICommand RegisterCommand { get; set; }
-        private void OnRegisterButtonClicked(object obj)
+        private void OnRegisterButtonClicked(object? obj)
         {
             Tab = new RegisterTab();
         }
@@ -112,20 +115,16 @@ namespace WindowsPet.VM
         #endregion
         public LoginVM()
         {
-            MinimizeCommand = new RelayCommands((object obj) =>
+            MinimizeCommand = new RelayCommands((object? obj) =>
             {
                 Application.Current.MainWindow.WindowState = WindowState.Minimized;
             });
-            CloseCommand = new RelayCommands((object obj) =>
+            CloseCommand = new RelayCommands((object? obj) =>
             {
                 Application.Current.Shutdown();
             });
             AppDbContext.Instance.ConnectToDB();
-            Task.Run(async () =>
-            {
-                ErrorHandle.Instance.StartHandler();
-                await NetworkManager.Instance.CreateAsync();
-            });
+            App.ServiceProvider.GetRequiredService<NetworkManager>();
             LoginCommand = new RelayCommands(OnLoginButtonClicked);
             Tab = new LoginTab();
             RegisterCommand = new RelayCommands(OnRegisterButtonClicked);

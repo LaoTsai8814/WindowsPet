@@ -38,8 +38,7 @@ namespace WindowsPet.VM.TabsVM
 
         private void OnPopularPetClicked(object obj)
         {
-
-
+            /*
             if (obj as string != null)
             {
                 string? petName = obj as string;
@@ -65,14 +64,16 @@ namespace WindowsPet.VM.TabsVM
             else
             {
                 ErrorHandle.ShowError("This Pet DOES NOT EXIST");
-            }
+            }*/
             //throw new NotImplementedException();
         }
 
         private void OnUserPetClicked(object obj)
         {
+            /*
             if(obj as string != null)
             {
+
                 string? petName = obj as string;
                 Pet? pet = AppDbContext.Instance.GetPet(petName);
                 if (pet != null)
@@ -88,7 +89,7 @@ namespace WindowsPet.VM.TabsVM
             {
                 ErrorHandle.ShowError("This Pet DOES NOT EXIST");
             }
-
+            */
 
         }
         

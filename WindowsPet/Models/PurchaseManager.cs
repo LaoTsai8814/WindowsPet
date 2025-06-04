@@ -11,7 +11,7 @@ namespace WindowsPet.Models
     {
         private static PurchaseManager? _instance;
         public static PurchaseManager? Instance =>_instance ??= new();
-
+        /*
         public async Task? OnPurchasePet(int id)
         {
             decimal price = 0;
@@ -29,6 +29,6 @@ namespace WindowsPet.Models
                 Credit = CurrentUser.Credit,
                 Price = price
             });
-        }
+        }*/
     }
 }

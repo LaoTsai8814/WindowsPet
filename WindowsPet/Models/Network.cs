@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,8 +16,7 @@ namespace WindowsPet.Models
 
     internal class NetworkManager
     {
-        private static NetworkManager? _instance;
-        public static NetworkManager Instance => _instance ??= new();
+        private readonly IServiceProvider _serviceProvide;
 
         private static TcpClient? TcpClient;
 
@@ -26,7 +26,7 @@ namespace WindowsPet.Models
 
         private StreamWriter? _writer;
 
-        public event Action<string>? OnMessageReceived;
+        public event Action<string> OnMessageReceived;
 
         public event Action<string>? OnError;
 
@@ -71,8 +71,7 @@ namespace WindowsPet.Models
                 
             });
             #endregion
-            HandleFromServer.Instance.ServerRespondHandler();
-            await Instance.ConnectToServer();
+            await ConnectToServer();
         }
 
 
@@ -156,7 +155,7 @@ namespace WindowsPet.Models
         }
         public async Task ReceiveAsync()
         {
-            if (_reader == null || OnMessageReceived == null || OnDisconnected == null)
+            if (_reader == null  || OnDisconnected == null)
                 return;
             try
             {
@@ -169,7 +168,7 @@ namespace WindowsPet.Models
                         break; // 連線斷了
                     }
                     Console.WriteLine(line);
-                    OnMessageReceived.Invoke(line);
+                    App.ServiceProvider.GetRequiredService<HandleFromServer>().OnReceiveMessage.Invoke(line);
                 }
             }
             catch (Exception ex)
@@ -182,7 +181,16 @@ namespace WindowsPet.Models
         }
         
         
-        NetworkManager() { }
+        public NetworkManager(IServiceProvider serviceProvider)
+        {
+            _serviceProvide = serviceProvider;
+            Task.Run(async () =>
+            {
+                await CreateAsync();
+            });
+            
+
+        }
 
     }
 
@@ -200,7 +208,9 @@ namespace WindowsPet.Models
         }
         public static async Task SerializeAndSendJson<T>(T obj)
         {
-            await NetworkManager.Instance.SendAsync(JsonConvert.SerializeObject(obj));
+            // Serialize the object to a JSON string
+            App.ServiceProvider.GetRequiredService<NetworkManager>()?.SendAsync(JsonConvert.SerializeObject(obj)); 
+            
 
         }
         public static T? DeserializeJson<T>(string json)

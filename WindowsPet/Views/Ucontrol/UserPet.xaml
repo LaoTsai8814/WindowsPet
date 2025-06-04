@@ -7,7 +7,7 @@
              xmlns:vm="clr-namespace:WindowsPet.VM.TabsVM"
              >
     <Button Style="{StaticResource Radiusbutton}"  Command="{Binding OnPetClick, RelativeSource={RelativeSource AncestorType=local:DashBoardCardUserPet}}"
-        CommandParameter="{Binding PetName, RelativeSource={RelativeSource AncestorType=local:UserPet}}" >
+        CommandParameter="{Binding PetToken, RelativeSource={RelativeSource AncestorType=local:DashBoardCardUserPet}}" >
         
         <Grid>
             <Grid.RowDefinitions>
@@ -20,7 +20,6 @@
             </Grid>
             <Grid Grid.Row="1">
                 <TextBlock Text="{Binding PetName,RelativeSource={RelativeSource AncestorType=local:UserPet}}" Style="{StaticResource TextblockStyle}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,5,0,5">
-
                 </TextBlock>
             </Grid>
         </Grid>

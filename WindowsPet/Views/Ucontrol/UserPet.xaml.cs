@@ -38,6 +38,10 @@ namespace WindowsPet.Views.Ucontrol
 
 
 
+        
+
+
+
         public string PetName
         {
             get { return (string)GetValue(PetNameProperty); }
@@ -50,7 +54,7 @@ namespace WindowsPet.Views.Ucontrol
 
 
 
-       
+
 
 
 

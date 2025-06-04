@@ -77,6 +77,7 @@ namespace WindowsPet.VM.TabsVM
 
         private async  void OnBuy(object obj)
         {
+            /*
             try
             {
                 int id = (int)obj;
@@ -95,7 +96,7 @@ namespace WindowsPet.VM.TabsVM
                 ErrorHandle.ShowError(e.Message);
                 // Handle the exception
             }
-            
+            */
 
         }
 
