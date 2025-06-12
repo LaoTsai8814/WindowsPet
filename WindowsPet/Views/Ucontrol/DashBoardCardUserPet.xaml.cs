@@ -36,7 +36,7 @@ namespace WindowsPet.Views.Ucontrol
 
         // Using a DependencyProperty as the backing store for UserPets.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty OnlinePetsProperty =
-            DependencyProperty.Register("OnlinePets", typeof(ObservableCollection<UIPets>), typeof(DashBoardCardUserPet));
+            DependencyProperty.Register("OnlinePets", typeof(ObservableCollection<Pet>), typeof(DashBoardCardUserPet));
 
 
         public string DashBoardName
@@ -58,14 +58,6 @@ namespace WindowsPet.Views.Ucontrol
         // Using a DependencyProperty as the backing store for OnPetClick.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty OnPetClickProperty =
             DependencyProperty.Register("OnPetClick", typeof(ICommand), typeof(DashBoardCardUserPet));
-        public object PetToken
-        {
-            get { return (object)GetValue(PetTokenProperty); }
-            set { SetValue(PetTokenProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for PetName.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty PetTokenProperty =
-            DependencyProperty.Register("PetToken", typeof(object), typeof(DashBoardCardUserPet));
+        
     }
 }

@@ -10,6 +10,7 @@ using System.Windows.Input;
 using WindowsPet.Command;
 using WindowsPet.Models;
 using YourGodDamnPet;
+using static WindowsPet.Models.FileManager;
 
 namespace WindowsPet.VM.TabsVM
 {
@@ -49,7 +50,16 @@ namespace WindowsPet.VM.TabsVM
             {
                 _pet = value;
                 _currentImageIndex = 0;
-                GIFList = new ObservableCollection<string>(_pet.GifPath);
+                try
+                {
+                    if(_pet == null) throw new NullReferenceException() ;
+                    GIFList = new ObservableCollection<string>(LocalStorageSetting.GetAllGIFFileFromDirectory(_pet.PetToken));
+
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine(e);
+                }
                 OnPropertyChanged();
 
             }

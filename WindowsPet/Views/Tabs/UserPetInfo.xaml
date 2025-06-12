@@ -17,8 +17,8 @@
             <!-- 使用與移除按鈕 -->
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
                 <Button Content="返回" Style="{StaticResource Pagesidebutton}" Command="{Binding BackCommand}" Margin="15" />
-                <Button Content="使用" Style="{StaticResource Pagesidebutton}" Command="{Binding UseCommand}" CommandParameter="{Binding Pet.Id}" Margin="15" />
-                <Button Content="移除" Style="{StaticResource Pagesidebutton}" Command="{Binding RemoveCommand}" CommandParameter="{Binding Pet.Id}" Margin="15" />
+                <Button Content="使用" Style="{StaticResource Pagesidebutton}" Command="{Binding UseCommand}" CommandParameter="{Binding Pet.PetToken}" Margin="15" />
+                <Button Content="移除" Style="{StaticResource Pagesidebutton}" Command="{Binding RemoveCommand}" CommandParameter="{Binding Pet.PetToken}" Margin="15" />
                 <Button Content="抄家" Style="{StaticResource Pagesidebutton}" Command="{Binding DisplayOnOther}" />
             </StackPanel>
         </StackPanel>

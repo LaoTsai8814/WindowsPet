@@ -12,6 +12,7 @@ using WindowsPet.Command;
 using WindowsPet.Models;
 using WindowsPet.Views.Tabs;
 using WindowsPet.Views.Ucontrol;
+using WindowsPet.VM.TabsVM;
 
 namespace WindowsPet.VM
 {
@@ -54,7 +55,11 @@ namespace WindowsPet.VM
             });
             SideButtonCommand = new Dictionary<string, ICommand>
             {
-                { "Home", new RelayCommands((object obj)=>{TabManager.Instance.GetTab<HomeTab>();}) },
+                { "Home", new RelayCommands((object obj)=>
+                    {   
+                        TabManager.Instance.GetTab<HomeTab>();
+                        
+                    }) },
                 { "Friends", new RelayCommands((object obj)=>{TabManager.Instance.GetTab<FriendTab>(); }) },
                 { "Shopping", new RelayCommands((object obj)=>{}) },
                 { "Chat", new RelayCommands((object obj)=>{}) },

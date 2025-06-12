@@ -8,9 +8,7 @@ namespace WindowsPet.Models.RepositoryInterface.Network
 {
     public interface INetworkRepository<T>
     {
-        void OnSuccessStatus();
-
-        void OnFailedStatus();
+        
         void Handler(T Command);
     }
 }

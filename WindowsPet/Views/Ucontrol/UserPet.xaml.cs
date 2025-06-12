@@ -53,7 +53,15 @@ namespace WindowsPet.Views.Ucontrol
             DependencyProperty.Register("PetName", typeof(string), typeof(UserPet), new PropertyMetadata(""));
 
 
+        public object PetToken
+        {
+            get { return (object)GetValue(PetTokenProperty); }
+            set { SetValue(PetTokenProperty, value); }
+        }
 
+        // Using a DependencyProperty as the backing store for PetName.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty PetTokenProperty =
+            DependencyProperty.Register("PetToken", typeof(object), typeof(UserPet), new PropertyMetadata(""));
 
 
 

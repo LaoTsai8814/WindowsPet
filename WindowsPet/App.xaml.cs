@@ -14,6 +14,8 @@ using Scrutor;
 using WindowsPet.VM;
 using WindowsPet.Models.RepositoryInterface.Network;
 using WindowsPet.Models.Repository.Networks;
+using WindowsPet.Models.RepositoryInterface.Database;
+using WindowsPet.Models.Repository.Database;
 
 namespace WindowsPet
 {
@@ -39,6 +41,8 @@ namespace WindowsPet
 
             services.AddScoped<IPetRepository, PetRepository>();
             services.AddScoped<IPetService, PetService>();
+
+            services.AddScoped<ICategoriesRepository, CategoriesRepository>();
 
             services.AddScoped<IView, View>();
             services.AddSingleton<IView, Tab>();

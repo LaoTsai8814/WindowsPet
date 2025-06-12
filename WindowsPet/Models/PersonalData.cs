@@ -14,36 +14,36 @@ namespace WindowsPet.Models
 		
 
         #region UserName
-        private string? _name;
+        private string _name;
 
-		public  string? Name
+		public  string Name
 		{
 			get { return _name; }
 			set { _name = value; }
 		}
         #endregion
         #region UserEmail
-        private string? _email;
+        private string _email;
 
-		public string? Email
+		public string Email
 		{
 			get { return _email; }
 			set { _email = value; }
 		}
         #endregion
 		#region Password
-		private string? _userpasswd;
+		private string _userpasswd;
 
-		public string? UserPassword
+		public string UserPassword
 		{
 			get { return _userpasswd; }
 			set { _userpasswd = value; }
 		}
 		#endregion
 		#region Token
-		private Guid? _token;
+		private Guid _token;
 		[Key]
-		public Guid? Token
+		public Guid Token
 		{
 			get { return _token; }
 			set { _token = value; }
@@ -112,10 +112,10 @@ namespace WindowsPet.Models
     }
     public static class CurrentUser
     {
-        #region
-        private static Guid? _token;
+        
+        private static Guid _token;
 
-        public static Guid? Token
+        public static Guid Token
         {
             get { return _token; }
             set { _token = value; }
@@ -128,7 +128,7 @@ namespace WindowsPet.Models
 			set { _credit = value; }
 		}
 
-		#endregion
+		
 	}
 	
 }

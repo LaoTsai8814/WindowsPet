@@ -24,8 +24,9 @@ namespace WindowsPet.Models.ServiceInterface
 
         bool IsPetOwnByUser(Guid UserId,Guid PetId);
 
-        void AddPopularPetToTable(List<Pet>? petList);
+        void AddSpecificPetListToTable(List<Pet>? petList,PetCategories Type);
 
+        public List<Pet> GetPetsByCategory(PetCategories PetCategory);
         public bool IsPetPurchased(Guid token, string? petname);
 
     }

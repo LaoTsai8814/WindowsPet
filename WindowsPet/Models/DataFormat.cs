@@ -14,12 +14,6 @@ namespace WindowsPet.Models
     /// <summary>
     /// This class is used to define the data format for the application.
     /// </summary>
-    public enum PetType
-    {
-        Non_Define,
-        PopularPet,
-        UserPet,
-    }
     public enum AccountType
     {
         Normal,
@@ -66,11 +60,44 @@ namespace WindowsPet.Models
         public string StatusDescription = "";
         public object? RespondParameter;
     }
+    public class PetCategories
+    {
+        [Key]
+        public  int Id { get; init; }
+        public  string Type { get; init; } = string.Empty;
 
+        public PetCategories(string type)
+        {
+            Type = type;
+            
+        }
+        public PetCategories(int id)
+        {
+            Id = id;
+            
+        }
+        public PetCategories()
+        {
+            
+
+        }
+        [Newtonsoft.Json.JsonIgnore]
+        public ICollection<Pet> Pets { get; set; } = new List<Pet>();
+    }
+    /// <summary>
+    /// should check if it has changed
+    /// </summary>
+    public class PetListRequestCommand:Command
+    {
+        public PetCategories categories =new(4);
+        public List<Pet> values=new();
+        
+
+    }
     [Serializable]
     public class UserDataRequestCommand : Command
     {
-       
+
         private List<FriendRequest> _pendingfriendlist =new();
 
         public List<FriendRequest> PendingFriendList
@@ -138,7 +165,8 @@ namespace WindowsPet.Models
             UserPet,
         }
         [Key]
-        public Guid Id { get; set; }
+        public Guid PetToken { get; set; }
+
         public string Name { get; set; } = string.Empty;
         public string? ImagePath { get; set; }
 
@@ -151,15 +179,17 @@ namespace WindowsPet.Models
         }
 
         public string? Description { get; set; } = string.Empty;
-        public bool IsAdopted { get; set; } = false;
 
-        public HashSet<PetCategorySet> PetCategory { get; set; } = new HashSet<PetCategorySet>() { PetCategorySet.Non_Define };
+        public string FileFolder { get; set; }
 
-        public List<string>? GifPath { get; set; } = new();
+        [Newtonsoft.Json.JsonIgnore]
+        public ICollection<PetCategories> PetCategories { get; set; } = new List<PetCategories>();
 
+        // EF Core 使用這個建構函式
+        public Pet() { }
         public Pet(Guid id, string name,decimal price=0)
         {
-            Id = id;
+            PetToken = id;
             Name = name;
             Price = price;
             /* Determine the path of the image and gif file

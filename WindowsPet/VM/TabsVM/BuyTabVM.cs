@@ -8,6 +8,8 @@ using System.Windows.Input;
 using WindowsPet.Models;
 using WindowsPet.Command;
 using System.Collections.ObjectModel;
+using System.IO;
+using static WindowsPet.Models.FileManager;
 
 namespace WindowsPet.VM.TabsVM
 {
@@ -56,7 +58,8 @@ namespace WindowsPet.VM.TabsVM
             {
                 _pet = value;
                 _currentImageIndex = 0;
-                GIFList =new ObservableCollection<string>(_pet.GifPath);
+
+                GIFList =new ObservableCollection<string>(LocalStorageSetting.GetAllFileFromDirectory(_pet.PetToken));
                 OnPropertyChanged();
             
             }

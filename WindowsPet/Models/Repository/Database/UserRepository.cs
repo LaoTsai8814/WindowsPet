@@ -21,7 +21,7 @@ namespace WindowsPet.Models.Repository
             => _context.Users.FirstOrDefault(u => u.Email == email);
 
         public PersonalData? GetByToken(Guid? token)
-            => _context.Users.Include(u => u.UserPets).FirstOrDefault(u => u.Token == token);
+            => _context.Users.FirstOrDefault(u => u.Token == token);
 
         public void Save()
             => _context.SaveChanges();

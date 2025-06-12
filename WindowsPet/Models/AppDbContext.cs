@@ -24,12 +24,10 @@ namespace WindowsPet.Models
         /// </summary>
         public DbSet<Pet> Pets { get; set; }
 
-        public DbSet<Pet> PopularPets { get; set; }
-
         public DbSet<Friend> Friends { get; set; }
 
         public DbSet<FriendRequest> FriendRequests {get;set;}
-
+        public DbSet<PetCategories> Categories { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         => options.UseSqlite("Data Source=account.db");
@@ -62,7 +60,10 @@ namespace WindowsPet.Models
                 .HasMany(u => u.ReceivedFriendRequests)
                 .WithMany(f =>f.RequestUser)
                 .UsingEntity(j => j.ToTable("FriendRequestsTable"));
-
+            modelBuilder.Entity<Pet>()
+                .HasMany(p => p.PetCategories)
+                .WithMany(c => c.Pets)
+                .UsingEntity(j => j.ToTable("PetCategories"));
 
 
         }
@@ -347,8 +348,6 @@ namespace WindowsPet.Models
             {
 
             }
-            
-            
             //throw new NotImplementedException();
         }
 

@@ -13,7 +13,7 @@ namespace WindowsPet.Models.Repository
         Pet? GetByName(string name);
 
         decimal GetPriceById(Guid PetId);
-        List<Pet>? GetByCategory(Pet.PetCategorySet category);
+        List<Pet>? GetByCategory(PetCategories category);
         void Add(Pet pet);
         void Save();
         void Delete(Pet pet);
