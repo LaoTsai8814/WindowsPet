@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,24 +13,23 @@ namespace WindowsPet.Models
 {
     public class AppDbContext : DbContext
     {
-        private static AppDbContext? _appdbcontext;
-
-        public static AppDbContext Instance => _appdbcontext ??= new();
-
         public DbSet<PersonalData> Users { get; set; }
-
-        /// <summary>
-        /// The pets that the user has purchased.
-        /// </summary>
         public DbSet<Pet> Pets { get; set; }
-
         public DbSet<Friend> Friends { get; set; }
-
-        public DbSet<FriendRequest> FriendRequests {get;set;}
+        public DbSet<FriendRequest> FriendRequests { get; set; }
         public DbSet<PetCategories> Categories { get; set; }
 
+        public AppDbContext() { }
+
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+
         protected override void OnConfiguring(DbContextOptionsBuilder options)
-        => options.UseSqlite("Data Source=account.db");
+        {
+            if (!options.IsConfigured)
+            {
+                options.UseSqlite("Data Source=account.db");
+            }
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -38,8 +37,9 @@ namespace WindowsPet.Models
                 .HasMany(u => u.UserPets)
                 .WithMany(p => p.Owner)
                 .UsingEntity(j => j.ToTable("UserPets"));
+
             modelBuilder.Entity<Friend>()
-        .HasKey(f => new { f.UserId, f.FriendId }); // Composite Key
+                .HasKey(f => new { f.UserId, f.FriendId }); // Composite Key
 
             modelBuilder.Entity<Friend>()
                 .HasOne(f => f.User)
@@ -58,271 +58,21 @@ namespace WindowsPet.Models
 
             modelBuilder.Entity<PersonalData>()
                 .HasMany(u => u.ReceivedFriendRequests)
-                .WithMany(f =>f.RequestUser)
+                .WithMany(f => f.RequestUser)
                 .UsingEntity(j => j.ToTable("FriendRequestsTable"));
+
             modelBuilder.Entity<Pet>()
                 .HasMany(p => p.PetCategories)
                 .WithMany(c => c.Pets)
                 .UsingEntity(j => j.ToTable("PetCategories"));
-
-
         }
+
         public void ConnectToDB()
         {
-            // Create the database if it doesn't exist          
-            Instance.Database.EnsureCreated();
+            Database.EnsureCreated();
         }
-        /*
-        public void AddUser(PersonalData data)
-        {
-            // Add a new user to the database
 
-            try
-            {
-                var user = Users.FirstOrDefault(u => u.Email == data.Email && u.Token == data.Token);
-                if (user != null)
-                {
-                    // User already exists, handle accordingly
-                    CurrentUser.Token = user.Token;
-                    return;
-                }
-                Users.Add(data);
-                CurrentUser.Token = data.Token;
-                CurrentUser.Credit = data.Credit;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-            }
-
-        }
-        */
-
-        /*Update To Use The Depency Injection
-         * This method is deprecated and will be removed in the future.
-         * 
-         * 
-        [Obsolete]
-        public void AddPetListToUser(string token, List<Pet> pets)
-        {
-            // Add a pet list to the user
-            if (pets == null)
-            {
-                return;
-            }
-            try
-            {
-                var user = Users.Include(u => u.UserPets).FirstOrDefault(u => u.Token == token);
-                if (user.UserPets == null)
-                    user.UserPets = new List<Pet>();
-                if (user != null)
-                {
-                    foreach (var pet in pets)
-                    {
-                        var trackedPet = Pets.FirstOrDefault(p => p.Id == pet.Id);
-                        if (trackedPet != null)
-                        {
-                            if (!user.UserPets.Any(u => u.Id == trackedPet.Id))
-                            {
-                                user.UserPets?.Add(trackedPet);
-                            }
-
-                        }
-                        else
-                        {
-                            // 如果是新寵物（未存在 DB），可以選擇先加入 Pets 資料表
-                            Pets.Add(pet);
-                            user.UserPets?.Add(pet);
-                        }
-                    }
-                }
-                else
-                {
-
-                }
-                SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-            }
-        }*/
-        /*Update To Use The Depency Injection
-        public void AddPopularPetToTable(List<Pet>? petList)
-        {
-            if (petList == null || petList.Count == 0) return;
-
-            try
-            {
-                foreach (var pet in petList)
-                {
-                    // 檢查資料庫中是否已存在該寵物
-                    var existingPet = Pets.FirstOrDefault(p => p.Id == pet.Id);
-
-                    if (existingPet == null)
-                    {
-                        Pets.Add(pet); // 加入到資料庫的 DbSet<Pet>
-                    }
-
-                }
-
-                SaveChanges(); // 實際寫入資料庫
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"新增熱門寵物時失敗: {ex.Message}");
-            }
-        }
-        */
-        /* Update To Use The Depency Injection
-        public bool IsPetPurchased(Guid? token, string? petname)
-        {
-            // Check if the pet is purchased by the user
-            try
-            {
-                var user = Users.FirstOrDefault(u => u.Token == token);
-                if (user != null)
-                {
-                    return user.UserPets?.Any(p => p.Name == petname) ?? false;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                return false;
-            }
-        }*/
-        /*Update To Use The Depency Injection
-        public Pet GetPet(string? Petname)
-        {             // Get the pet from the database
-            try
-            {
-                var pet = Pets.FirstOrDefault(u => u.Name == Petname);
-                if (pet != null)
-                {
-                    return pet;
-                }
-                else
-                {
-                    return null!;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                return null!;
-            }
-        }
-        public
-        */
-        /*Update To Use The Depency Injection
-        Pet? GetPopularPet(string? Petname)
-        {             // Get the pet from the database
-            try
-            {
-                var pet = Pets.FirstOrDefault(u => u.Name == Petname && u.IsPopular == true);
-                if (pet != null)
-                {
-                    return pet;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                return null;
-            }
-        }
-        */
-        /*Update To Use The Depency Injection
-        internal void VerifyPetPrice(Guid petId, decimal price)
-        {
-            Pet? pet = Pets.FirstOrDefault(p => p.Id == petId);
-            if (pet == null)
-            {
-                // Handle the case where the pet is not found
-                return;
-            }
-            pet.Price = price;
-            SaveChanges();
-
-            //throw new NotImplementedException();
-        }*/
-        /*Update To Use The Depency Injection
-        internal void AddPetToUser(Guid? token, Guid petId)
-        {
-            try
-            {
-                // Add a pet to the user
-                var user = Users.FirstOrDefault(u => u.Token == token);
-                if (user == null)
-                {
-                    // Handle the case where the user is not found
-                    return;
-                }
-                Pet? pet = Pets.FirstOrDefault(p => p.Id == petId);
-                if (pet != null)
-                    user.UserPets!.Add(pet!);
-                SaveChanges();
-                ViewModelManager.Instance.GetViewModel<HomeTabVM>(TabManager.Instance.GetTabObject<HomeTab>())
-                    .MyFavoritePets.Add(new UIPets(pet.Name, pet.ImagePath));
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-            }
-        }
-        */
-        /*Update To Use The Depency Injection
-        internal void UpdateUserCredit(Guid? token, decimal credit)
-        {
-            var user = Users.FirstOrDefault(u => u.Token == token);
-
-            if (user != null)
-            {
-                user.Credit = credit;
-            }
-            SaveChanges();
-
-            //throw new NotImplementedException();
-        }*/
-        /*Update To Use The Depency Injection
-        public bool IsPetOwnByUser(Guid id)
-        {
-            var pet = Users.Include(u => u.UserPets).FirstOrDefault(u => u.Token == CurrentUser.Token).UserPets?.FirstOrDefault(p => p.Id == id);
-            if (pet == null)
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
-        }
-        */
-        /*Update To Use The Depency Injection
-        public bool IsPetOwnByUser(string? name)
-        {
-            var pet = Users.Include(u => u.UserPets).FirstOrDefault(u => u.Token == CurrentUser.Token)!.UserPets?.FirstOrDefault(p => p.Name == name);
-            if (pet == null)
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
-        }
-        */
-
-        internal void AddPendingFriendToUser(List<FriendRequest> PendingFriendRequest)
+        public void AddPendingFriendToUser(List<FriendRequest> pendingFriendRequest)
         {
             try
             {
@@ -330,10 +80,9 @@ namespace WindowsPet.Models
                 if (user == null)
                     return;
 
-                foreach (var pendingrequest in PendingFriendRequest)
+                foreach (var pendingrequest in pendingFriendRequest)
                 {
-                    if(FriendRequests.Any(u=>u.Id
-                    == pendingrequest.Id))
+                    if (FriendRequests.Any(u => u.Id == pendingrequest.Id))
                         continue;
                     FriendRequests.Add(pendingrequest);
                     if (user.Token != pendingrequest.FromUserId)
@@ -342,16 +91,13 @@ namespace WindowsPet.Models
                     }
                     SaveChanges();
                 }
-                
             }
-            catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException)
             {
-
             }
-            //throw new NotImplementedException();
         }
 
-        internal void AddFriendToUser(List<Friend> friendList)
+        public void AddFriendToUser(List<Friend> friendList)
         {
             var user = Users.Include(u => u.Friend).FirstOrDefault(u => u.Token == CurrentUser.Token);
             if (user == null)
@@ -365,10 +111,9 @@ namespace WindowsPet.Models
                 }
             }
             SaveChanges();
-
         }
 
-        internal List<FriendRequest> GetPendingFriendRequest()
+        public List<FriendRequest> GetPendingFriendRequest()
         {
             var user = Users.Include(u => u.ReceivedFriendRequests).FirstOrDefault(u => u.Token == CurrentUser.Token);
             if (user == null)
@@ -378,7 +123,8 @@ namespace WindowsPet.Models
                 return user.ReceivedFriendRequests.ToList();
             }
         }
-        internal List<Friend> GetUserFriends()
+
+        public List<Friend> GetUserFriends()
         {
             var user = Users.Include(u => u.Friend).FirstOrDefault(u => u.Token == CurrentUser.Token);
             if (user == null)
@@ -389,11 +135,11 @@ namespace WindowsPet.Models
             }
         }
 
-        internal void RemovePendingFriendRequest(Guid fromUserId)
+        public void RemovePendingFriendRequest(Guid fromUserId)
         {
             try
             {
-                var friend =  FriendRequests.FirstOrDefault(u => u.FromUserId == fromUserId);
+                var friend = FriendRequests.FirstOrDefault(u => u.FromUserId == fromUserId);
                 if (friend != null)
                 {
                     FriendRequests.Remove(friend);
@@ -404,26 +150,23 @@ namespace WindowsPet.Models
             {
                 Console.WriteLine(ex);
             }
-            //throw new NotImplementedException();
         }
 
-        internal void AddFriendToTable(Friend friend)
+        public void AddFriendToTable(Friend friend)
         {
             try
             {
                 var f = Users.Include(u => u.Friend).FirstOrDefault(u => u.Token == CurrentUser.Token);
-                if(!f.Friend.Any(u=> u.Token == friend.Token))
+                if (f != null && !f.Friend.Any(u => u.Token == friend.Token))
                 {
                     f.Friend.Add(friend);
                     SaveChanges();
-
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine(ex);
             }
-            
         }
     }
 }

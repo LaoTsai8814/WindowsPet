@@ -1,40 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.ComponentModel;
-using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using WindowsPet.Command;
 using WindowsPet.Models;
+using WindowsPet.Models.ServiceInterface;
 
 namespace WindowsPet.VM
 {
-    internal class RegisterVM : INotifyPropertyChanged
+    public class RegisterVM : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler? PropertyChanged;
+        private readonly ILoginManager _loginManager;
 
-        #region UI User Registration infomation
+        #region UI User Registration information
         private string? _password;
-
         public string? Password
         {
-            get { return _password; }
+            get => _password;
             set
             {
                 _password = value;
-
                 OnPropertyChanged();
             }
         }
 
         private string? _confirmpasswd;
-
         public string? ConfirmPassword
         {
-            get { return _confirmpasswd; }
+            get => _confirmpasswd;
             set
             {
                 _confirmpasswd = value;
@@ -43,24 +37,24 @@ namespace WindowsPet.VM
         }
 
         private string? _email;
-
         public string? Email
         {
-            get { return _email; }
+            get => _email;
             set
             {
                 _email = value;
-                if(_email!=null&&!VerifyInput.IsValidEmailFormat(_email))
+                if (_email != null && !VerifyInput.IsValidEmailFormat(_email))
                 {
                     Email = null;
                 }
                 OnPropertyChanged();
             }
         }
+
         private string? _username;
         public string? Username
         {
-            get { return _username; }
+            get => _username;
             set
             {
                 _username = value;
@@ -68,48 +62,31 @@ namespace WindowsPet.VM
             }
         }
         #endregion
+
         public ICommand RegisterCommand { get; set; }
-        public RegisterVM()
+
+        public RegisterVM(ILoginManager loginManager)
         {
-            // Constructor logic here
+            _loginManager = loginManager;
             RegisterCommand = new RelayCommands(OnRegisterButtonClicked);
         }
-        /// <summary>
-        /// On Register Button Clicked 
-        /// </summary>
-        private async void OnRegisterButtonClicked(object obj)
+
+        private async void OnRegisterButtonClicked(object? obj)
         {
-            #region Get All Property In This Class(Current Not Used)
-            //Type type = this.GetType();
-            //PropertyInfo[] properties = type.GetProperties();
-            //foreach (PropertyInfo property in properties)
-            //{
-            //    var value = property.GetValue(this);
-            //    if (value == null)
-            //    {
-            //        // Handle null value
-            //        Console.WriteLine($"Property {property.Name} is null.");
-            //        return;
-            //    }
-            //}
-            #endregion
-            
-            #region Check Password And Email and send to server
-            if (VerifyInput.IsPasswordEqual(Password, ConfirmPassword)&& VerifyInput.IsStrongPassword(Password))
+            if (VerifyInput.IsPasswordEqual(Password, ConfirmPassword) && VerifyInput.IsStrongPassword(Password))
             {
-                // Call the registration logic here
-                await LoginManager.Instance.RegisterationRequest(DataFormat.GetRegisterCommand(Username,Email,Password));                
+                await _loginManager.RegisterationRequest(DataFormat.GetRegisterCommand(Username, Email, Password));
             }
-            else if(!VerifyInput.IsPasswordEqual(Password, ConfirmPassword))
+            else if (!VerifyInput.IsPasswordEqual(Password, ConfirmPassword))
             {
-                ErrorHandle.ShowError("Passwords does not match.");
+                ErrorHandle.ShowError("Passwords do not match.");
             }
             else
             {
                 ErrorHandle.ShowError("Password is not strong enough.");
             }
-            #endregion
         }
+
         private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

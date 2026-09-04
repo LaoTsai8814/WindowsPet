@@ -23,7 +23,7 @@ namespace WindowsPet.Models.Service
             var user = _userRepo.GetByEmail(email);
             return user.Token;
         }
-
+        
         public void RegisterUser(PersonalData data)
         {
             // Add a new user to the database

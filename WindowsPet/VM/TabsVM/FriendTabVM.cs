@@ -1,27 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using WindowsPet.Command;
 using WindowsPet.Models;
+using WindowsPet.Models.RepositoryInterface.DatabaseRepositoryInterface;
+using WindowsPet.Models.ServiceInterface;
 
 namespace WindowsPet.VM.TabsVM
 {
-    internal class FriendTabVM : INotifyPropertyChanged
+    public class FriendTabVM : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        private string _searchText;
+        private readonly IFriendRepository _friendRepository;
+        private readonly IFriendService _friendService;
 
+        private string _searchText = string.Empty;
         public string SearchText
         {
-            get { return _searchText; }
-            set { _searchText = value; }
+            get => _searchText;
+            set
+            {
+                _searchText = value;
+                OnPropertyChanged();
+            }
         }
 
         public ICommand AddFriendCommand { get; set; }
@@ -38,6 +42,7 @@ namespace WindowsPet.VM.TabsVM
                 OnPropertyChanged();
             }
         }
+
         private ObservableCollection<Friend> _friends;
         public ObservableCollection<Friend> Friends
         {
@@ -49,31 +54,28 @@ namespace WindowsPet.VM.TabsVM
             }
         }
 
-
-        public FriendTabVM()
+        public FriendTabVM(IFriendRepository friendRepository, IFriendService friendService)
         {
+            _friendRepository = friendRepository;
+            _friendService = friendService;
+
             AddFriendCommand = new RelayCommands(OnAddFriend);
-            PendingFriendRequest = new ObservableCollection <FriendRequest> (AppDbContext.Instance.GetPendingFriendRequest());
-            
-            Friends = new ObservableCollection<Friend>(AppDbContext.Instance.GetUserFriends());
+            PendingFriendRequest = new ObservableCollection<FriendRequest>(_friendRepository.GetPendingFriendRequests());
+            Friends = new ObservableCollection<Friend>(_friendRepository.GetUserFriends());
             AcceptCommand = new RelayCommands(OnAccept);
             RejectCommand = new RelayCommands(OnReject);
         }
 
-        private async void OnReject(object? obj)
+        private void OnReject(object? obj)
         {
-            
-            
         }
 
-        private async void OnAccept(object? obj)
+        private void OnAccept(object? obj)
         {
-            
         }
 
-        private async void OnAddFriend(object? obj)
+        private void OnAddFriend(object? obj)
         {
-            
         }
 
         protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)

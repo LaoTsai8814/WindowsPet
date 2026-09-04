@@ -11,54 +11,12 @@ namespace WindowsPet.Models
 {
     public class PersonalData
     {
-		
-
-        #region UserName
-        private string _name;
-
-		public  string Name
-		{
-			get { return _name; }
-			set { _name = value; }
-		}
-        #endregion
-        #region UserEmail
-        private string _email;
-
-		public string Email
-		{
-			get { return _email; }
-			set { _email = value; }
-		}
-        #endregion
-		#region Password
-		private string _userpasswd;
-
-		public string UserPassword
-		{
-			get { return _userpasswd; }
-			set { _userpasswd = value; }
-		}
-		#endregion
-		#region Token
-		private Guid _token;
-		[Key]
-		public Guid Token
-		{
-			get { return _token; }
-			set { _token = value; }
-		}
-
-		private decimal _credit;
-
-		public decimal Credit
-		{
-			get { return _credit; }
-			set { _credit = value; }
-		}
-
-		#endregion
-
+        [Key]
+        public Guid Token { get; set; }
+        public string Name { get; set; }
+		public string Email { get; set; }
+		public string PasswordHash { get; set; }
+		public decimal Credit { get; set; }
 		public List<Pet>? UserPets=new();
         // 我加了哪些人好友
         public ICollection<Friend> Friend { get; set; } = new List<Friend>();

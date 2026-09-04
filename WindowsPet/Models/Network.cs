@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -9,80 +9,64 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using WindowsPet.Models;
+using WindowsPet.Models.ServiceInterface;
 
 namespace WindowsPet.Models
 {
-
-    internal class NetworkManager
+    public class NetworkManager : INetworkManager
     {
-        private readonly IServiceProvider _serviceProvide;
+        private readonly HandleFromServer _handleFromServer;
 
         private static TcpClient? TcpClient;
-
         private static NetworkStream? NetworkStream;
-
         private StreamReader? _reader;
-
         private StreamWriter? _writer;
 
-        public event Action<string> OnMessageReceived;
-
+        public event Action<string>? OnMessageReceived;
         public event Action<string>? OnError;
-
         public event Action? OnDisconnected;
-
         public event Action<string>? OnSendingDisconnected;
-
         public static volatile bool OnConnecting = false;
 
-
-
-
+        public NetworkManager(HandleFromServer handleFromServer)
+        {
+            _handleFromServer = handleFromServer;
+            Task.Run(async () =>
+            {
+                await CreateAsync();
+            });
+        }
 
         /// <summary>
         /// Try Connect To Server and Start the Server Respond Handler
         /// </summary>
-        /// <returns></returns>
         public async Task CreateAsync()
         {
-            #region
             OnDisconnected += (async () =>
             {
                 if (!OnConnecting)
                 {
                     await ConnectToServer();
                     OnConnecting = true;
-
                 }
             });
             OnSendingDisconnected += (async (string str) =>
             {
-                
-                    
-                if(await ConnectToServer())
+                if (await ConnectToServer())
                 {
                     await SendAsync(str);
                     Console.WriteLine("Reconnect And Send Success");
                 }
-                    
-
-                
-                
             });
-            #endregion
+
             await ConnectToServer();
         }
-
-
-
-
 
         /// <summary>
         /// Try Connect To Server
         /// Set Reader and Writer Stream
         /// Open A Thread For Receive Server Respond Message
-        ///</summary>
+        /// </summary>
         private async Task<bool> ConnectToServer()
         {
             try
@@ -106,9 +90,11 @@ namespace WindowsPet.Models
             {
                 OnConnecting = false;
             }
+
             _reader = new StreamReader(NetworkStream, Encoding.UTF8);
             _writer = new StreamWriter(NetworkStream, Encoding.UTF8) { AutoFlush = true };
-            Thread ReceiveThread = new Thread(async () =>
+
+            Thread receiveThread = new Thread(async () =>
             {
                 try
                 {
@@ -119,16 +105,10 @@ namespace WindowsPet.Models
                     OnError?.Invoke($"ReceiveThread Exception: {ex.Message}");
                 }
             });
-            ReceiveThread.IsBackground = true;
-            ReceiveThread.Start();
+            receiveThread.IsBackground = true;
+            receiveThread.Start();
             return true;
-
         }
-        
-
-
-
-
 
         public async Task SendAsync(string message)
         {
@@ -138,7 +118,6 @@ namespace WindowsPet.Models
                 {
                     OnSendingDisconnected?.Invoke(message);
                     OnError?.Invoke("TCP Client is not connected. Reconnecting");
-
                     return;
                 }
                 if (_writer != null)
@@ -150,12 +129,17 @@ namespace WindowsPet.Models
             {
                 OnSendingDisconnected?.Invoke(message);
                 OnError?.Invoke($"Error Message:{ex}");
-
             }
         }
+
+        public async Task SendJsonAsync<T>(T obj)
+        {
+            await SendAsync(JsonConvert.SerializeObject(obj));
+        }
+
         public async Task ReceiveAsync()
         {
-            if (_reader == null  || OnDisconnected == null)
+            if (_reader == null || OnDisconnected == null)
                 return;
             try
             {
@@ -168,65 +152,41 @@ namespace WindowsPet.Models
                         break; // 連線斷了
                     }
                     Console.WriteLine(line);
-                    App.ServiceProvider.GetRequiredService<HandleFromServer>().OnReceiveMessage.Invoke(line);
+                    OnMessageReceived?.Invoke(line);
+                    _handleFromServer.OnReceiveMessage?.Invoke(line);
                 }
             }
             catch (Exception ex)
             {
-                // 可以觸發 OnError 事件或 log
                 OnError?.Invoke(ex.Message);
                 Console.WriteLine($"接收錯誤: {ex.Message}");
             }
-
         }
-        
-        
-        public NetworkManager(IServiceProvider serviceProvider)
-        {
-            _serviceProvide = serviceProvider;
-            Task.Run(async () =>
-            {
-                await CreateAsync();
-            });
-            
-
-        }
-
     }
 
-
-
     /// <summary>
-    /// Json Serialize and Deserialize Include Serialize And Send
+    /// Json Serialize and Deserialize Utilities
     /// </summary>
-    internal class JsonSerialize
+    public static class JsonSerialize
     {
         public static string SerializeJson(Type type)
         {
             return JsonConvert.SerializeObject(type);
-
         }
-        public static async Task SerializeAndSendJson<T>(T obj)
+
+        public static string SerializeJson<T>(T obj)
         {
-            // Serialize the object to a JSON string
-            App.ServiceProvider.GetRequiredService<NetworkManager>()?.SendAsync(JsonConvert.SerializeObject(obj)); 
-            
-
+            return JsonConvert.SerializeObject(obj);
         }
+
         public static T? DeserializeJson<T>(string json)
         {
-            // Deserialize the JSON string into an object of type T
-
-            return JsonConvert.DeserializeObject<T>(json) ;
+            return JsonConvert.DeserializeObject<T>(json);
         }
-
     }
 
-
-
-
     /// <summary>
-    ///  Get the Main Server IP and port
+    /// Get the Main Server IP and port
     /// </summary>
     internal class NetworkSetup
     {
@@ -236,14 +196,11 @@ namespace WindowsPet.Models
         internal protected static IPAddress GetServerIP()
         {
             return ipaddr;
-
         }
+
         internal protected static int GetServerPort()
         {
             return port;
         }
     }
 }
-
-
-

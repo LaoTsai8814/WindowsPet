@@ -1,45 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using WindowsPet.Models;
+using WindowsPet.Models.ServiceInterface;
 using WindowsPet.Views;
 
 namespace WindowsPet.VM
 {
-    internal class MainWindowVM : INotifyPropertyChanged
+    public class MainWindowVM : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler? PropertyChanged;
-
-        public static Action<object?>? _changeViewAction;
-
-
+        private readonly INavigationService _navigationService;
         private object? _currentView;
 
         public object? CurrentView
         {
-            get
-            {
-                return _currentView;
-            }
+            get => _currentView;
             set
             {
                 _currentView = value;
                 OnPropertyChanged();
             }
         }
-        public MainWindowVM()
+
+        public MainWindowVM(INavigationService navigationService)
         {
-            _changeViewAction += ChangeViewAction;
-            // Initialize the view to HomeView
-            CurrentView = ViewManager.Instance.GetView<LoginView>();
-        }
-        private void ChangeViewAction(object view)
-        {
-            CurrentView = view;
+            _navigationService = navigationService;
+            _navigationService.CurrentViewChanged += view => CurrentView = view;
+            _navigationService.NavigateTo<LoginView>();
         }
 
         protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)

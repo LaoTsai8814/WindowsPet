@@ -1,123 +1,99 @@
-﻿using System.Collections.ObjectModel;
+using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Timers;
+using System.Windows;
 using System.Windows.Input;
 using WindowsPet.Command;
 using WindowsPet.Models;
-using System;
-using System.Threading;
-using Microsoft.Extensions.DependencyInjection;
-using WindowsPet.Models.Service;
-using WindowsPet.Models.ServiceInterface;
-using System.IO;
-using static WindowsPet.Models.FileManager;
-using System.Collections.Generic;
-using System.Windows;
 using WindowsPet.Models.Repository;
+using WindowsPet.Models.ServiceInterface;
 using WindowsPet.Views.Tabs;
-using WindowsPet.Views.Ucontrol;
 
 namespace WindowsPet.VM.TabsVM
 {
     public class HomeTabVM : INotifyPropertyChanged
     {
-        public ObservableCollection<UIPets> OnlinePets { get; set; } = new ObservableCollection<UIPets>();
-        public ObservableCollection<Pet> PopularPets { get; set; } = new();
+        private readonly IPetService _petService;
+        private readonly IPetRepository _petRepository;
+        private readonly ITabNavigationService _tabNavigationService;
+        private readonly UserPetInfoTabVM _userPetInfoTabVM;
 
-        public ObservableCollection<UIPets> MyFavoritePets { get; set; } = new ObservableCollection<UIPets>();
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        public ObservableCollection<UIPets> OnlinePets { get; set; } = new();
+        public ObservableCollection<Pet> PopularPets { get; set; } = new();
+        public ObservableCollection<UIPets> MyFavoritePets { get; set; } = new();
 
         public ICommand OnUserPetClick { get; set; }
         public ICommand OnPopularPetClick { get; set; }
 
-        public HomeTabVM()
+        public HomeTabVM(
+            IPetService petService,
+            IPetRepository petRepository,
+            ITabNavigationService tabNavigationService,
+            UserPetInfoTabVM userPetInfoTabVM)
         {
+            _petService = petService;
+            _petRepository = petRepository;
+            _tabNavigationService = tabNavigationService;
+            _userPetInfoTabVM = userPetInfoTabVM;
+
             OnUserPetClick = new RelayCommands(OnUserPetClicked);
             OnPopularPetClick = new RelayCommands(OnPopularPetClicked);
 
-
-            Application.Current.Dispatcher.Invoke(() =>
+            Application.Current?.Dispatcher?.Invoke(() =>
             {
                 TimeElapsed();
             });
-
-
-
         }
 
         private void TimeElapsed()
         {
-            using (var scope = App.ServiceProvider.CreateScope())
+            try
             {
-                var filemanager = scope.ServiceProvider.GetRequiredService<IPetService>();
-
-                // 更新熱門寵物列表
-                PopularPets = new ObservableCollection<Pet>(filemanager.GetPetsByCategory(new PetCategories("Popular")));
+                var pets = _petService.GetPetsByCategory(new PetCategories("Popular"));
+                if (pets != null)
+                {
+                    PopularPets = new ObservableCollection<Pet>(pets);
+                    OnPropertyChanged(nameof(PopularPets));
+                }
             }
-            //throw new NotImplementedException();
+            catch (Exception ex)
+            {
+                Console.WriteLine($"HomeTabVM TimeElapsed error: {ex.Message}");
+            }
         }
 
-        private void OnPopularPetClicked(object obj)
+        private void OnPopularPetClicked(object? obj)
         {
-
-
-            if (Guid.Parse(obj.ToString()) != null)
+            if (obj != null && Guid.TryParse(obj.ToString(), out var petId))
             {
-                string? petName = obj as string;
-                using (var scope = App.ServiceProvider.CreateScope())
+                var popularpet = _petRepository.GetById(petId);
+                if (popularpet != null)
                 {
-                    var handle = scope.ServiceProvider.GetRequiredService<IPetRepository>();
-                    if (handle == null)
-                    {
-                        ErrorHandle.ShowError("IPetService is null");
-                        return;
-                    }
-                    Pet? popularpet = handle.GetById(Guid.Parse(obj.ToString()));
-
-                    ViewModelManager.Instance.GetViewModel<UserPetInfoTabVM>(TabManager.Instance.GetTabObject<UserPetInfo>()).Pet = popularpet;
-                    TabManager.Instance.GetTab<UserPetInfo>();
-
+                    _userPetInfoTabVM.Pet = popularpet;
+                    _tabNavigationService.NavigateTo<UserPetInfo>();
+                }
+                else
+                {
+                    ErrorHandle.ShowError("This Pet DOES NOT EXIST");
                 }
             }
             else
             {
-                ErrorHandle.ShowError("This Pet DOES NOT EXIST");
+                ErrorHandle.ShowError("Invalid Pet ID");
             }
-            //throw new NotImplementedException();
         }
 
-        private void OnUserPetClicked(object obj)
+        private void OnUserPetClicked(object? obj)
         {
-            /*
-            if(obj as string != null)
-            {
-
-                string? petName = obj as string;
-                Pet? pet = AppDbContext.Instance.GetPet(petName);
-                if (pet != null)
-                {
-                    ViewModelManager.Instance.GetViewModel<UserPetInfoTabVM>(TabManager.Instance.GetTabObject<UserPetInfo>()).Pet = pet;
-                    TabManager.Instance.GetTab<UserPetInfo>();
-                }
-                // You can use the petName to find the corresponding pet in your collection
-                // Handle the pet click event here
-                // For example, navigate to a pet details page or show a popup
-            }
-            else
-            {
-                ErrorHandle.ShowError("This Pet DOES NOT EXIST");
-            }
-            */
-
+            // Placeholder for user pet click logic
         }
-
-        
 
         protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-
-        public event PropertyChangedEventHandler? PropertyChanged;
     }
 }

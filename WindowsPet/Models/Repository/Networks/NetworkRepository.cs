@@ -1,113 +1,128 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Org.BouncyCastle.Ocsp;
 using WindowsPet.Models.ConvertTools;
+using WindowsPet.Models.RepositoryInterface.Database;
 using WindowsPet.Models.RepositoryInterface.Network;
-using WindowsPet.Models.Service;
 using WindowsPet.Models.ServiceInterface;
 using WindowsPet.Views;
-using WindowsPet.Views.Tabs;
 using WindowsPet.VM;
-using WindowsPet.VM.TabsVM;
-using static WindowsPet.Models.FileManager;
 
 namespace WindowsPet.Models.Repository.Networks
 {
     public class RegisterAccount : INetworkRepository<RegisterCommand>
     {
-        
-        public void Handler(RegisterCommand Command)
-        {
+        private readonly LoginVM _loginVM;
 
-            // Handle the command here
-            // For example, you can send the command to a server or process it locally
-            
+        public RegisterAccount(LoginVM loginVM)
+        {
+            _loginVM = loginVM;
+        }
+
+        public void Handler(RegisterCommand command)
+        {
+            // Handle the register command here
         }
 
         public void OnFailedStatus()
         {
-            throw new NotImplementedException();
         }
 
         public void OnSuccessStatus()
         {
-            LoginVM? vm = ViewModelManager.Instance.GetViewModel<LoginVM>(ViewManager.Instance.GetView<LoginView>());
-            if (vm != null)
-            {
-                vm.ChangeTab?.Invoke();
-            }
-            //throw new NotImplementedException();
+            _loginVM.ChangeTab?.Invoke();
         }
     }
+
     public class Login : INetworkRepository<LoginCommand>
     {
-       
-        public async void Handler(LoginCommand Command)
+        private readonly ILoginManager _loginManager;
+        private readonly IFileManager _fileManager;
+        private readonly INavigationService _navigationService;
+        private readonly INetworkManager _networkManager;
+
+        public Login(
+            ILoginManager loginManager,
+            IFileManager fileManager,
+            INavigationService navigationService,
+            INetworkManager networkManager)
         {
-            // Handle the server response here
-            // For example, you can check the status and perform actions accordingly
-            LoginManager.Instance.UserLoggedInSuccess(Request2PersonalData.CommandPersonalDataConvertion(Command));
-            //Set User Token
-            CurrentUser.Token = Command.UserToken;
-            //Call DI Injection
-            var filemanager = App.ServiceProvider.GetRequiredService<FileManager>();
-            //Request For Current Popular Pet List etc...
-            await JsonSerialize.SerializeAndSendJson<PetListRequestCommand>(new PetListRequestCommand { UserToken =CurrentUser.Token,categories = new(4)});
-            
-            ViewManager.Instance.GetView<HomeView>();
+            _loginManager = loginManager;
+            _fileManager = fileManager;
+            _navigationService = navigationService;
+            _networkManager = networkManager;
         }
 
-        
+        public async void Handler(LoginCommand command)
+        {
+            _loginManager.UserLoggedInSuccess(Request2PersonalData.CommandPersonalDataConvertion(command));
+            CurrentUser.Token = command.UserToken;
+
+            // Request for current popular pet list
+            await _networkManager.SendJsonAsync(new PetListRequestCommand
+            {
+                UserToken = CurrentUser.Token,
+                categories = new PetCategories(4)
+            });
+
+            _navigationService.NavigateTo<HomeView>();
+        }
     }
+
     public class PetListRequest : INetworkRepository<PetListRequestCommand>
     {
-        public async void Handler(PetListRequestCommand Command)
+        private readonly IPetService _petService;
+        private readonly IPetRepository _petRepository;
+        private readonly IFileManager _fileManager;
+
+        public PetListRequest(IPetService petService, IPetRepository petRepository, IFileManager fileManager)
         {
-            if (Command == null)
+            _petService = petService;
+            _petRepository = petRepository;
+            _fileManager = fileManager;
+        }
+
+        public async void Handler(PetListRequestCommand command)
+        {
+            if (command == null)
             {
                 return;
             }
-            using (var scope = App.ServiceProvider.CreateScope())
-            {
-                var handle = scope.ServiceProvider.GetService<IPetService>();
-                if (handle == null)
-                {
-                    Console.WriteLine("IPetService is null");
-                    return;
-                }
-                handle.AddSpecificPetListToTable(Command.values,Command.categories);
 
-            }
+            _petService.AddSpecificPetListToTable(command.values, command.categories);
+
             try
             {
-                var filehandle = App.ServiceProvider.GetRequiredService<FileManager>();
                 var tasks = new List<Task>();
 
-                foreach (var pet in Command.values)
+                foreach (var pet in command.values)
                 {
-                    var files = await filehandle.GetAllFilesInFolderAsync(pet.PetToken.ToString());
-                    
-                    if (!Directory.Exists(Path.Combine(LocalStorageSetting.LocalCache, Command.categories.Type,pet.PetToken.ToString())))
+                    var files = await _fileManager.GetAllFilesInFolderAsync(pet.PetToken.ToString());
+                    var categoryDir = Path.Combine(FileManager.LocalStorageSetting.LocalCache, command.categories.Type, pet.PetToken.ToString());
+
+                    if (!Directory.Exists(categoryDir))
                     {
-                        Directory.CreateDirectory(Path.Combine(LocalStorageSetting.LocalCache, Command.categories.Type, pet.PetToken.ToString()));
+                        Directory.CreateDirectory(categoryDir);
                     }
-                    using (var scope = App.ServiceProvider.CreateScope())
+
+                    var petEntity = _petRepository.GetById(pet.PetToken);
+                    if (petEntity != null)
                     {
-                        var handle = scope.ServiceProvider.GetRequiredService<IPetRepository>();
-                        handle.GetById(pet.PetToken).ImagePath = Path.Combine(LocalStorageSetting.LocalCache, Command.categories.Type, pet.PetToken.ToString(), Path.GetFileName(files.FirstOrDefault(u => u.EndsWith(".png"))));
-                        handle.Save();
+                        var pngFile = files.FirstOrDefault(u => u.EndsWith(".png", StringComparison.OrdinalIgnoreCase));
+                        if (pngFile != null)
+                        {
+                            petEntity.ImagePath = Path.Combine(categoryDir, Path.GetFileName(pngFile));
+                            _petRepository.Save();
+                        }
                     }
+
                     foreach (var f in files)
                     {
                         string fileName = Path.GetFileName(f);
-                        tasks.Add(filehandle.DownloadFileAsync(f, Path.Combine(LocalStorageSetting.LocalCache, Command.categories.Type, pet.PetToken.ToString()), Path.GetFileName(f)));
-                        
+                        tasks.Add(_fileManager.DownloadFileAsync(f, categoryDir, fileName));
                     }
                 }
                 await Task.WhenAll(tasks);
@@ -117,61 +132,56 @@ namespace WindowsPet.Models.Repository.Networks
                 Console.WriteLine($"Error in PetListRequest: {ex.Message}");
             }
         }
-        
     }
+
     public class UserDataRequest : INetworkRepository<UserDataRequestCommand>
     {
-        public async void Handler(UserDataRequestCommand Command)
+        public void Handler(UserDataRequestCommand command)
         {
-            
-            //throw new NotImplementedException();
         }
-
-        
     }
+
     public class PetPurchase : INetworkRepository<PetPurchaseCommand>
     {
-        public void Handler(PetPurchaseCommand Command)
+        public void Handler(PetPurchaseCommand command)
         {
-            if (Command == null)
-            {
-                return;
-            }
-            
-            //throw new NotImplementedException();
         }
 
         public void OnFailedStatus()
         {
-            throw new NotImplementedException();
         }
 
         public void OnSuccessStatus()
         {
-            throw new NotImplementedException();
         }
     }
+
     public class ServerRespond : INetworkRepository<ServerRespondStatus>
     {
-        public void Handler(ServerRespondStatus Command)
+        private readonly IServiceProvider _serviceProvider;
+
+        public ServerRespond(IServiceProvider serviceProvider)
         {
-            if(Command == null)
+            _serviceProvider = serviceProvider;
+        }
+
+        public void Handler(ServerRespondStatus command)
+        {
+            if (command == null)
             {
                 Console.WriteLine($"Error Occur On {typeof(ServerRespond)}");
                 return;
             }
-            Dispatch(Command.RespondParameter, Command.RequestStatus);
-
-
-            //throw new NotImplementedException();
+            Dispatch(command.RespondParameter, command.RequestStatus);
         }
-        private void Dispatch(object? obj,bool status)
+
+        private void Dispatch(object? obj, bool status)
         {
             if (obj == null) return;
 
             var type = obj.GetType();
             var handlerType = typeof(INetworkRepository<>).MakeGenericType(type);
-            var handler = App.ServiceProvider.GetService(handlerType);
+            var handler = _serviceProvider.GetService(handlerType);
 
             if (handler != null)
             {
@@ -193,7 +203,5 @@ namespace WindowsPet.Models.Repository.Networks
                 Console.WriteLine($"未找到 {type.Name} 對應的處理者");
             }
         }
-
-        
     }
 }

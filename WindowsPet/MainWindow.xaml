@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="760" Width="1280" ResizeMode="NoResize" AllowsTransparency="True" WindowStyle="None" Background="Transparent" WindowStartupLocation="CenterScreen">
 
-    <Border CornerRadius="25">
+    <Border CornerRadius="25" Background="White">
         <Grid>
             <UserControl Content="{Binding CurrentView}"></UserControl>
         </Grid>

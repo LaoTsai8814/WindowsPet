@@ -1,132 +1,120 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using WindowsPet.Models;
-using WindowsPet.Command;
+using System;
 using System.Collections.ObjectModel;
-using System.IO;
-using static WindowsPet.Models.FileManager;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Windows.Input;
+using WindowsPet.Command;
+using WindowsPet.Models;
+using WindowsPet.Models.ServiceInterface;
 
 namespace WindowsPet.VM.TabsVM
 {
-    internal class BuyTabVM : INotifyPropertyChanged
+    public class BuyTabVM : INotifyPropertyChanged
     {
-        public event PropertyChangedEventHandler? PropertyChanged;
-        private int _currentImageIndex = 0;
+        private readonly IFileManager _fileManager;
+        private readonly IPurchaseManager? _purchaseManager;
 
+        public event PropertyChangedEventHandler? PropertyChanged;
         public event Action? OnImageChange;
 
-        private Uri? Gifuri;
+        private int _currentImageIndex = 0;
+        private Uri? _gifUri;
 
         public Uri? GifUri
         {
-            get 
+            get
             {
-                Gifuri = new Uri(GIFList[_currentImageIndex], UriKind.Absolute);
-                return Gifuri; 
+                if (GIFList != null && GIFList.Count > _currentImageIndex && _currentImageIndex >= 0)
+                {
+                    _gifUri = new Uri(GIFList[_currentImageIndex], UriKind.Absolute);
+                    return _gifUri;
+                }
+                return null;
             }
-            set 
+            set
             {
-                Gifuri = new Uri(GIFList[_currentImageIndex], UriKind.Absolute);
+                _gifUri = value;
                 OnPropertyChanged();
             }
         }
-        public ObservableCollection<string>? GIFList { get; set; } = new ObservableCollection<string>
-        {
-            
-        };
+
+        public ObservableCollection<string>? GIFList { get; set; } = new();
+
         public decimal Credit
         {
-            get { return CurrentUser.Credit; }
-            set 
+            get => CurrentUser.Credit;
+            set
             {
                 CurrentUser.Credit = value;
                 OnPropertyChanged();
-            
             }
         }
-        private Pet? _pet;
 
+        private Pet? _pet;
         public Pet? Pet
         {
-            get { return _pet; }
-            set 
+            get => _pet;
+            set
             {
                 _pet = value;
                 _currentImageIndex = 0;
 
-                GIFList =new ObservableCollection<string>(LocalStorageSetting.GetAllFileFromDirectory(_pet.PetToken));
+                if (_pet != null)
+                {
+                    GIFList = new ObservableCollection<string>(_fileManager.GetAllFileFromDirectory(_pet.PetToken));
+                }
+                else
+                {
+                    GIFList = new ObservableCollection<string>();
+                }
                 OnPropertyChanged();
-            
+                OnPropertyChanged(nameof(GifUri));
             }
         }
+
         public ICommand? PreviousImageCommand { get; set; }
         public ICommand? NextImageCommand { get; set; }
-
         public ICommand? BackCommand { get; set; }
         public ICommand? BuyCommand { get; set; }
 
-        public BuyTabVM()
+        public BuyTabVM(IFileManager fileManager, IPurchaseManager? purchaseManager = null)
         {
+            _fileManager = fileManager;
+            _purchaseManager = purchaseManager;
+
             PreviousImageCommand = new RelayCommands(OnPreviousImage);
             NextImageCommand = new RelayCommands(OnNextImage);
             BackCommand = new RelayCommands(OnBack);
             BuyCommand = new RelayCommands(OnBuy);
         }
 
-        private async  void OnBuy(object obj)
+        private void OnBuy(object? obj)
         {
-            /*
-            try
-            {
-                int id = (int)obj;
-                if (Pet != null)
-                {
-                    await PurchaseManager.Instance.OnPurchasePet(id);
-                }
-                else
-                {
-                    ErrorHandle.ShowError("No Pet Selected");
-                    // Show message that no pet is selected
-                }
-            }
-            catch(Exception e)
-            {
-                ErrorHandle.ShowError(e.Message);
-                // Handle the exception
-            }
-            */
-
         }
 
-        private void OnBack(object obj)
+        private void OnBack(object? obj)
         {
-
         }
 
-        private void OnNextImage(object obj)
+        private void OnNextImage(object? obj)
         {
-            if (GIFList.Count == 0) return;
+            if (GIFList == null || GIFList.Count == 0) return;
 
             _currentImageIndex = (_currentImageIndex + 1) % GIFList.Count;
-            OnImageChange!.Invoke();
+            OnImageChange?.Invoke();
             OnPropertyChanged(nameof(GifUri));
         }
 
-        private void OnPreviousImage(object obj)
+        private void OnPreviousImage(object? obj)
         {
-            if (GIFList.Count == 0) return;
+            if (GIFList == null || GIFList.Count == 0) return;
 
             _currentImageIndex = (_currentImageIndex - 1 + GIFList.Count) % GIFList.Count;
-            OnImageChange!.Invoke();
+            OnImageChange?.Invoke();
             OnPropertyChanged(nameof(GifUri));
         }
 
-        protected void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
+        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }

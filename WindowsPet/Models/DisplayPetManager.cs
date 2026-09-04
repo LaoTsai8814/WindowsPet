@@ -1,39 +1,30 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using WindowsPet.Models.ServiceInterface;
 using YourGodDamnPet;
 
 namespace WindowsPet.Models
 {
-    internal class DisplayPetManager
+    public class DisplayPetManager : IDisplayPetManager
     {
-        private static DisplayPetManager? _instance;
-        public static DisplayPetManager? Instance => _instance ??= new();
+        private readonly Stack<YourGodDamnPet.MainWindow> _windowStack = new();
+        private PetStartup? _petStartup;
 
-        Stack<YourGodDamnPet.MainWindow> WindowStack = new();
-        PetStartup petstartup;
-
-
-
-        internal void DisplayPet(Uri peturi)
+        public void DisplayPet(Uri peturi)
         {
-            petstartup ??= new();
-            petstartup.ShowWindow(peturi,out var mainwindow);
-            WindowStack.Push(mainwindow);
+            if (peturi == null) return;
+            _petStartup ??= new PetStartup();
+            _petStartup.ShowWindow(peturi, out var mainWindow);
+            _windowStack.Push(mainWindow);
         }
 
-        internal void RemoveDisplayPet(Uri peturi)
+        public void RemoveDisplayPet(Uri peturi)
         {
-            var window =  WindowStack.Pop();
-            
-            window.Close();
+            if (_windowStack.Count > 0)
+            {
+                var window = _windowStack.Pop();
+                window.Close();
+            }
         }
-
-
-
-
-
     }
 }

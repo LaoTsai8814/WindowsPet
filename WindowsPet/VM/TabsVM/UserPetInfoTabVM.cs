@@ -1,78 +1,90 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using WindowsPet.Command;
 using WindowsPet.Models;
-using YourGodDamnPet;
-using static WindowsPet.Models.FileManager;
+using WindowsPet.Models.ServiceInterface;
+using WindowsPet.Views.Tabs;
 
 namespace WindowsPet.VM.TabsVM
 {
-    internal class UserPetInfoTabVM:INotifyPropertyChanged
+    public class UserPetInfoTabVM : INotifyPropertyChanged
     {
-        public ObservableCollection<string>? GIFList { get; set; } = new ObservableCollection<string>
-        {
+        private readonly IDisplayPetManager _displayPetManager;
+        private readonly IFileManager _fileManager;
+        private readonly ITabNavigationService _tabNavigationService;
 
-        };
+        public event Action? OnImageChange;
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        public ObservableCollection<string>? GIFList { get; set; } = new();
+
         private int _currentImageIndex = 0;
-        private Uri? Gifuri;
+        private Uri? _gifUri;
+
         public Uri? GifUri
         {
             get
             {
-                Gifuri = new Uri(GIFList[_currentImageIndex], UriKind.Absolute);
-
-                return Gifuri;
-
+                if (GIFList != null && GIFList.Count > _currentImageIndex && _currentImageIndex >= 0)
+                {
+                    _gifUri = new Uri(GIFList[_currentImageIndex], UriKind.Absolute);
+                    return _gifUri;
+                }
+                return null;
             }
             set
             {
-                Gifuri = new Uri(GIFList[_currentImageIndex], UriKind.Absolute);
+                _gifUri = value;
                 OnPropertyChanged();
-
             }
         }
 
-        public event Action? OnImageChange;
-        public event PropertyChangedEventHandler? PropertyChanged;
         private Pet? _pet;
-
         public Pet? Pet
         {
-            get { return _pet; }
+            get => _pet;
             set
             {
                 _pet = value;
                 _currentImageIndex = 0;
                 try
                 {
-                    if(_pet == null) throw new NullReferenceException() ;
-                    GIFList = new ObservableCollection<string>(LocalStorageSetting.GetAllGIFFileFromDirectory(_pet.PetToken));
-
+                    if (_pet != null)
+                    {
+                        GIFList = new ObservableCollection<string>(_fileManager.GetAllGIFFileFromDirectory(_pet.PetToken));
+                    }
+                    else
+                    {
+                        GIFList = new ObservableCollection<string>();
+                    }
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Console.WriteLine(e);
                 }
                 OnPropertyChanged();
-
+                OnPropertyChanged(nameof(GifUri));
             }
         }
+
         public ICommand UseCommand { get; set; }
         public ICommand RemoveCommand { get; set; }
         public ICommand BackCommand { get; set; }
         public ICommand PreviousImageCommand { get; set; }
         public ICommand NextImageCommand { get; set; }
 
-        
-        public UserPetInfoTabVM()
+        public UserPetInfoTabVM(
+            IDisplayPetManager displayPetManager,
+            IFileManager fileManager,
+            ITabNavigationService tabNavigationService)
         {
+            _displayPetManager = displayPetManager;
+            _fileManager = fileManager;
+            _tabNavigationService = tabNavigationService;
+
             UseCommand = new RelayCommands(OnUse);
             RemoveCommand = new RelayCommands(OnRemove);
             BackCommand = new RelayCommands(OnBack);
@@ -82,40 +94,44 @@ namespace WindowsPet.VM.TabsVM
 
         private void OnBack(object? obj)
         {
-            //throw new NotImplementedException();
+            _tabNavigationService.NavigateTo<HomeTab>();
         }
 
         private void OnUse(object? obj)
         {
-            DisplayPetManager.Instance.DisplayPet(GifUri);
-            //throw new NotImplementedException();
+            if (GifUri != null)
+            {
+                _displayPetManager.DisplayPet(GifUri);
+            }
         }
 
         private void OnRemove(object? obj)
         {
-            DisplayPetManager.Instance.RemoveDisplayPet(GifUri);
-            //throw new NotImplementedException();
+            if (GifUri != null)
+            {
+                _displayPetManager.RemoveDisplayPet(GifUri);
+            }
         }
 
-        private void OnNextImage(object obj)
+        private void OnNextImage(object? obj)
         {
-            if (GIFList.Count == 0) return;
+            if (GIFList == null || GIFList.Count == 0) return;
 
             _currentImageIndex = (_currentImageIndex + 1) % GIFList.Count;
-            OnImageChange!.Invoke();
+            OnImageChange?.Invoke();
             OnPropertyChanged(nameof(GifUri));
         }
 
-        private void OnPreviousImage(object obj)
+        private void OnPreviousImage(object? obj)
         {
-            if (GIFList.Count == 0) return;
+            if (GIFList == null || GIFList.Count == 0) return;
 
             _currentImageIndex = (_currentImageIndex - 1 + GIFList.Count) % GIFList.Count;
-            OnImageChange!.Invoke();
+            OnImageChange?.Invoke();
             OnPropertyChanged(nameof(GifUri));
         }
 
-        protected void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string propertyName = null)
+        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
